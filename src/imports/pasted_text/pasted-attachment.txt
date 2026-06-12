@@ -1,0 +1,301 @@
+Use this Figma AI prompt. It is designed to create a premium Airbnb-style luxury villa/rental house website inspired by the clean elegance of [Cuisine Colombo](https://www.cuisinecolombo.lk/?utm_source=chatgpt.com) while using the Airbnb listing structure and features.
+
+The Airbnb property link you shared should inspire the content sections, booking flow, amenities, and gallery layout.
+
+---
+
+# Figma AI Prompt
+
+Design a modern luxury vacation rental website for a premium Airbnb villa in Sri Lanka. The design style should combine Airbnb luxury aesthetics with the elegant dark-modern style of Cuisine Colombo website.
+
+The website should feel:
+
+* luxurious
+* relaxing
+* modern
+* tropical
+* premium
+* interactive
+* cinematic
+* mobile responsive
+
+Use:
+
+* glassmorphism
+* smooth gradients
+* subtle animations
+* parallax scrolling
+* rounded cards
+* elegant typography
+* immersive full-screen sections
+* premium hospitality branding
+
+Color palette:
+
+* warm white
+* deep charcoal
+* tropical green
+* gold accents
+* soft beige
+* ocean blue highlights
+
+Typography:
+
+* modern luxury fonts
+* large cinematic headings
+* elegant spacing
+* minimal but premium UI
+
+---
+
+# WEBSITE STRUCTURE
+
+## 1. Hero Section
+
+Full-screen cinematic hero with:
+
+* autoplay image/video slider
+* luxury villa photography
+* overlay gradient
+* animated text reveal
+* booking widget on hero section
+
+Hero text example:
+“Escape to Paradise in Sri Lanka”
+“Luxury Villa Stay with Ocean Breeze & Tropical Comfort”
+
+Include:
+
+* Check-in
+* Check-out
+* Guests selector
+* “Book Now” button
+
+Add floating glassmorphism booking card.
+
+---
+
+## 2. Navigation Bar
+
+Transparent navbar that becomes solid on scroll.
+
+Menu items:
+
+* Home
+* The Villa
+* Gallery
+* Amenities
+* Experiences
+* Reviews
+* Location
+* Contact
+* Book Now CTA
+
+Include:
+
+* animated hover effects
+* luxury logo
+* mobile hamburger menu
+
+---
+
+## 3. About The Villa
+
+Two-column layout with:
+
+* elegant property description
+* modern image collage
+* animated counters
+
+Show:
+
+* number of guests
+* bedrooms
+* bathrooms
+* swimming pool
+* wifi
+* kitchen
+* parking
+
+Use luxury Airbnb-style icon cards.
+
+---
+
+## 4. Interactive Gallery
+
+Pinterest-style masonry gallery.
+
+Features:
+
+* hover zoom
+* fullscreen lightbox
+* smooth animations
+* cinematic transitions
+* category filters
+
+Categories:
+
+* Bedrooms
+* Living Areas
+* Pool
+* Kitchen
+* Outdoor
+* Views
+
+---
+
+## 5. Amenities Section
+
+Interactive premium cards with icons.
+
+Amenities include:
+
+* Infinity Pool
+* Air Conditioning
+* High-Speed WiFi
+* Smart TV
+* BBQ Area
+* Fully Equipped Kitchen
+* Free Parking
+* Airport Pickup
+* Ocean View
+* Workspace
+
+Cards should glow slightly on hover.
+
+---
+
+## 6. Experiences Section
+
+Luxury Sri Lankan experiences.
+
+Cards for:
+
+* Beach tours
+* Lagoon boat rides
+* Seafood dining
+* Surfing
+* Sunset BBQ
+* Local cultural tours
+
+Use immersive travel-style visuals.
+
+---
+
+## 7. Testimonials / Reviews
+
+Airbnb-inspired review section.
+
+Include:
+
+* guest avatars
+* star ratings
+* scrolling testimonials
+* animated review cards
+
+Style should feel trustworthy and premium.
+
+---
+
+## 8. Availability Calendar
+
+Interactive booking calendar UI.
+
+Features:
+
+* availability checker
+* pricing display
+* seasonal pricing
+* guest selector
+* reserve button
+
+Use modern Airbnb-style booking experience.
+
+---
+
+## 9. Location Section
+
+Luxury map section with:
+
+* embedded interactive map
+* nearby attractions
+* airport distance
+* beaches
+* restaurants
+* tourist spots
+
+Add travel-time cards.
+
+---
+
+## 10. Contact & Booking Section
+
+Modern luxury contact form with:
+
+* WhatsApp button
+* email inquiry
+* phone contact
+* quick booking CTA
+
+Add floating social icons.
+
+---
+
+## 11. Footer
+
+Elegant dark footer with:
+
+* logo
+* navigation links
+* social media
+* newsletter
+* copyright
+* trust badges
+
+---
+
+# DESIGN EFFECTS
+
+Add:
+
+* smooth scrolling
+* fade-in animations
+* hover transitions
+* parallax sections
+* glassmorphism cards
+* subtle shadows
+* cinematic image overlays
+* premium loading animations
+
+---
+
+# SPECIAL FEATURES
+
+Include:
+
+* floating WhatsApp booking button
+* AI travel assistant chatbot
+* multilingual support
+* dark/light mode toggle
+* weather widget
+* nearby attractions slider
+* dynamic pricing cards
+* animated statistics
+* Instagram feed integration
+
+---
+
+# STYLE REFERENCES
+
+Design inspiration:
+
+* Airbnb Luxe
+* Aman Resorts
+* luxury tropical villas
+* boutique hotel websites
+* Cuisine Colombo aesthetic
+* modern hospitality UI/UX
+
+The final design should look like a world-class luxury villa booking platform with immersive visuals and premium user experience. ([cuisinecolombo.lk][1])
+
+[1]: https://www.cuisinecolombo.lk/?utm_source=chatgpt.com "Restaurants In Colombo | Cuisine Colombo | Best Restaurants In Colombo"
