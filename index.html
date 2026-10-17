@@ -1,16 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta name="theme-color" content="#F5F2EB" />
+    <meta name="description" content="Nalaka Rest is a quiet 3-bedroom private house in the cool hills of Nuwara Eliya, Sri Lanka. Hosts up to 6 guests with a full kitchen, hot water, and tea garden views." />
+    <title>Nalaka Rest — Private Highland Home in Nuwara Eliya</title>
+    
+    <!-- Google Fonts: Newsreader (Display Serif) & Plus Jakarta Sans (Body Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+      :root {
+        --font-serif: 'Newsreader', Georgia, serif;
+        --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      html, body {
+        margin: 0;
+        padding: 0;
+        background-color: #F5F2EB;
+        color: #1A221E;
+        font-family: var(--font-sans);
+        overflow-x: hidden;
+        width: 100%;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root {
+        min-height: 100vh;
+      }
+    </style>
+    <!-- Booked Dates Data (Single source of truth for confirmed reservations) -->
+    <script src="/booked-dates.js"></script>
 
-  <!DOCTYPE html>
-  <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Untitled</title>
-      <style>html, body { height: 100%; margin: 0; } #root { height: 100%; }</style>
-    </head>
+    <!-- Flatpickr (Range Date Picker) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-    <body>
-      <div id="root"></div>
-      <script type="module" src="/src/main.tsx"></script>
-    </body>
-  </html>
-  
+    <!-- Scroll to Hero on Page Reload -->
+    <script>
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
+      window.scrollTo(0, 0);
+      window.addEventListener('beforeunload', function() {
+        window.scrollTo(0, 0);
+      });
+    </script>
+  </head>
+
+  <body class="bg-[#F5F2EB] text-[#1A221E] antialiased selection:bg-[#1E3A2B] selection:text-[#F5F2EB]">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

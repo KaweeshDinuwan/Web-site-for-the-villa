@@ -1,12 +1,12 @@
-import { useState } from "react";
-import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
-import { motion, AnimatePresence } from "motion/react";
-import { X } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { X, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+
 import room1 from "./Sources/room1.jpg";
 import living from "./Sources/living.jpg";
 import living1 from "./Sources/living1.jpg";
 import living2 from "./Sources/living2.jpg";
 import living3 from "./Sources/living3.jpg";
+import view from "./Sources/view.jpg";
 import bath from "./Sources/bath.jpg";
 import bed from "./Sources/bed.jpg";
 import bed1 from "./Sources/bed1.jpg";
@@ -17,125 +17,296 @@ import outdoor from "./Sources/outdoor.jpg";
 import outdoor1 from "./Sources/outdoor1.jpg";
 import outdoor2 from "./Sources/outdoor2.jpg";
 import outdoor3 from "./Sources/outdoor3.jpg";
-import view from "./Sources/view.jpg";
 
-const images = [
-  //beds
-  { src: bed, category: "Beds" },
-  { src: bed1, category: "Beds" },
-  //living areas
-  { src: living, category: "Living Areas" },
-  { src: living1, category: "Living Areas" },
-  { src: living2, category: "Living Areas" },
-  { src: living3, category: "Living Areas" },
-  {src: dining_table, category: "Living Areas" },
-  //bathrooms
-  { src: bath, category: "Bathrooms" },
-  //kitchen
-  { src: kitchen, category: "Kitchen" },
-  { src: kitchen1, category: "Kitchen" },
-  //outdoor
-  { src: outdoor, category: "Outdoor" },
-  { src: outdoor1, category: "Outdoor" },
-  { src: outdoor2, category: "Outdoor" },
-  { src: outdoor3, category: "Outdoor" },
-  //views
-  { src: view, category: "Views" },
-  //Bedrooms (main image)
-  { src: room1, category: "Bedrooms" },
+interface Photo {
+  src: string;
+  title: string;
+  caption: string;
+}
+
+const photos: Photo[] = [
+  {
+    src: room1,
+    title: "Master Bedroom",
+    caption: "The largest bedroom with a solid timber bed frame and morning sun.",
+  },
+  {
+    src: living,
+    title: "The Living Hall",
+    caption: "Main gathering room with wide bay windows looking out to the hills.",
+  },
+  {
+    src: bed,
+    title: "Second Bedroom",
+    caption: "Warm mountain blankets and bedside reading lamps for quiet nights.",
+  },
+  {
+    src: dining_table,
+    title: "Family Dining Space",
+    caption: "Seats up to 6 people right next to the kitchen prep area.",
+  },
+  {
+    src: kitchen,
+    title: "Equipped Kitchen",
+    caption: "Four-burner gas stove, microwave, rice cooker, and full-size fridge.",
+  },
+  {
+    src: bed1,
+    title: "Third Bedroom",
+    caption: "Cozy third room with fresh linen and wardrobe storage.",
+  },
+  {
+    src: bath,
+    title: "Bathroom & Shower",
+    caption: "Tiled bathroom with continuous 24/7 geyser hot water.",
+  },
+  {
+    src: living1,
+    title: "Lounge Seating",
+    caption: "Comfortable sofas for evening family card games or reading.",
+  },
+  {
+    src: kitchen1,
+    title: "Pantry & Breakfast Bar",
+    caption: "Electric kettle, tea set, glassware, and cookware essentials.",
+  },
+  {
+    src: living2,
+    title: "Fireside Sitting Area",
+    caption: "Traditional hearth corner for cool highland evenings.",
+  },
+  {
+    src: outdoor,
+    title: "Front Lawn & Gate",
+    caption: "The private lawn where guests sit outside with morning tea.",
+  },
+  {
+    src: outdoor1,
+    title: "Gated Driveway",
+    caption: "Secure parking for two full-sized vehicles inside the property.",
+  },
+  {
+    src: living3,
+    title: "Upper Corridor",
+    caption: "Sunlit hallway with polished timber floors and vintage prints.",
+  },
+  {
+    src: outdoor2,
+    title: "Stone Garden Pathway",
+    caption: "Bordered by highland flora and fresh mountain greenery.",
+  },
+  {
+    src: outdoor3,
+    title: "Villa Evening Veranda",
+    caption: "Warm porch lanterns and peaceful mountain nights.",
+  },
+  {
+    src: view,
+    title: "Mountain Overlook",
+    caption: "Fresh breezes and scenic misty views across the villa boundary.",
+  },
 ];
 
-const categories = ["All", "Bedrooms", "Living Areas", "Beds", "Kitchen", "Outdoor", "Views"];
-
 export function Gallery() {
-  const [filter, setFilter] = useState("All");
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  const filteredImages = filter === "All" ? images : images.filter(img => img.category === filter);
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+  };
+
+  const closeLightbox = useCallback(() => {
+    setLightboxIndex(null);
+  }, []);
+
+  const showPrev = useCallback(() => {
+    if (lightboxIndex === null) return;
+    setLightboxIndex((prev) => (prev !== null ? (prev - 1 + photos.length) % photos.length : null));
+  }, [lightboxIndex]);
+
+  const showNext = useCallback(() => {
+    if (lightboxIndex === null) return;
+    setLightboxIndex((prev) => (prev !== null ? (prev + 1) % photos.length : null));
+  }, [lightboxIndex]);
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft") showPrev();
+      if (e.key === "ArrowRight") showNext();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [lightboxIndex, closeLightbox, showPrev, showNext]);
+
+  // Dynamically calculate span classes so no empty cells exist
+  const getCardClasses = (idx: number, total: number) => {
+    const isLast = idx === total - 1;
+    if (!isLast) {
+      return "col-span-1 aspect-[4/3]";
+    }
+
+    const rem3 = total % 3;
+    const rem2 = total % 2;
+
+    let lgClass = "lg:col-span-1 lg:aspect-[4/3]";
+    if (rem3 === 2) {
+      // 2 items in 3-column row: span remaining 2 columns matching row height
+      lgClass = "lg:col-span-2 lg:h-[270px] lg:aspect-auto";
+    } else if (rem3 === 1) {
+      // 1 item in 3-column row: span all 3 columns matching row height (~270px)
+      lgClass = "lg:col-span-3 lg:h-[270px] lg:aspect-auto";
+    }
+
+    let smClass = "sm:col-span-1 sm:aspect-[4/3]";
+    if (rem2 === 1) {
+      // 1 item in 2-column row: span 2 columns
+      smClass = "sm:col-span-2 sm:aspect-[16/7]";
+    }
+
+    return `col-span-1 aspect-[4/3] ${smClass} ${lgClass}`;
+  };
 
   return (
-    <section className="py-24 bg-[#121212] text-[#F9F6F0]" id="gallery">
-      <div className="container mx-auto px-6">
+    <section className="py-16 md:py-20 bg-[#F5F2EB] text-[#1A221E] border-b border-[#1A221E]/10" id="gallery">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
         
-        <div className="text-center mb-16">
-          <h4 className="text-[#D4AF37] font-['Montserrat'] tracking-widest uppercase text-sm mb-4">Visual Journey</h4>
-          <h2 className="text-4xl md:text-5xl font-['Playfair_Display']">The Gallery</h2>
+        {/* Section Header */}
+        <div className="max-w-2xl mb-8 md:mb-10">
+          <span className="text-xs uppercase tracking-widest text-[#8A5229] font-bold block mb-1.5">
+            Inside the House &amp; Around
+          </span>
+          <h2 className="font-['Newsreader'] text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight">
+            Real photos of our rooms, kitchen, and grounds.
+          </h2>
+          <p className="font-['Plus_Jakarta_Sans'] text-sm md:text-base text-[#515B54] mt-2">
+            All 16 authentic photographs of Nalaka Rest. Click any photo to see it full-screen.
+          </p>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setFilter(cat)}
-              className={`px-6 py-2 rounded-full font-['Montserrat'] text-sm tracking-wide transition-all ${
-                filter === cat 
-                  ? "bg-[#D4AF37] text-[#0a0a0a] font-medium" 
-                  : "bg-transparent border border-white/20 text-white/70 hover:border-[#D4AF37] hover:text-[#D4AF37]"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+        {/* Uniform CSS Grid: 3 cols desktop, 2 cols tablet, 1 col mobile with 16px (gap-4) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {photos.map((item, idx) => {
+            const spanClass = getCardClasses(idx, photos.length);
+            return (
+              <div
+                key={item.title}
+                onClick={() => openLightbox(idx)}
+                className={`gallery-card group relative cursor-pointer overflow-hidden rounded-xl bg-[#1A221E] border border-[#1A221E]/10 shadow-xs hover:border-[#1E3A2B] hover:shadow-lg transition-all duration-300 ${spanClass}`}
+              >
+                {/* Fixed aspect-ratio image with object-fit: cover */}
+                <img
+                  src={item.src}
+                  alt={item.title}
+                  loading="lazy"
+                  className="gallery-card-img w-full h-full object-cover transition-transform duration-600 block"
+                />
 
-        {/* Masonry Grid */}
-        <motion.div layout>
-          <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3 }}>
-            <Masonry gutter="24px">
-              {filteredImages.map((img, i) => (
-                <motion.div
-                  key={img.src}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className="relative group cursor-pointer rounded-2xl overflow-hidden"
-                  onClick={() => setSelectedImage(img.src)}
-                >
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex items-center justify-center">
-                    <span className="text-white font-['Montserrat'] tracking-wider uppercase text-sm border border-white px-4 py-2 rounded-full">View</span>
+                {/* Subtle dark gradient scrim for text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent opacity-90 group-hover:opacity-95 transition-opacity duration-300" />
+
+                {/* Overlay Caption: keeps card heights 100% equal with zero dead space */}
+                <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5 flex flex-col justify-end text-white pointer-events-none">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-['Newsreader'] text-base sm:text-lg md:text-xl font-medium tracking-tight text-white drop-shadow-xs">
+                      {item.title}
+                    </h3>
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/20 backdrop-blur-md text-white text-[11px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1 shrink-0 border border-white/25 shadow-xs">
+                      <Eye size={12} />
+                      View
+                    </span>
                   </div>
-                  <img
-                    src={img.src}
-                    style={{ width: "100%", display: "block" }}
-                    alt={img.category}
-                    className="group-hover:scale-105 transition-transform duration-700 ease-out"
-                  />
-                </motion.div>
-              ))}
-            </Masonry>
-          </ResponsiveMasonry>
-        </motion.div>
+                  <p className="text-white/80 text-xs sm:text-[13px] mt-1 leading-snug line-clamp-2 drop-shadow-xs font-['Plus_Jakarta_Sans']">
+                    {item.caption}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
       </div>
 
-      {/* Lightbox */}
-      <AnimatePresence>
-        {selectedImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-[#0a0a0a]/95 backdrop-blur-xl flex items-center justify-center p-4"
-            onClick={() => setSelectedImage(null)}
+      {/* Accessible Fullscreen Lightbox */}
+      {lightboxIndex !== null && photos[lightboxIndex] && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Photo view: ${photos[lightboxIndex].title}`}
+          onClick={closeLightbox}
+          className="fixed inset-0 z-50 bg-[#1A221E]/95 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6"
+        >
+          {/* Top Bar */}
+          <div 
+            className="absolute top-4 left-4 right-4 flex items-center justify-between z-20 pointer-events-auto"
+            onClick={(e) => e.stopPropagation()}
           >
-            <button 
-              className="absolute top-8 right-8 text-white/70 hover:text-white transition-colors"
-              onClick={() => setSelectedImage(null)}
+            <span className="text-xs text-[#F5F2EB]/80 font-medium bg-[#1A221E] px-3.5 py-1.5 rounded-full border border-white/10">
+              {photos[lightboxIndex].title} ({lightboxIndex + 1} of {photos.length})
+            </span>
+
+            <button
+              ref={closeButtonRef}
+              type="button"
+              onClick={closeLightbox}
+              className="w-10 h-10 rounded-full bg-[#1A221E] border border-white/20 text-[#F5F2EB] hover:bg-[#F5F2EB] hover:text-[#1A221E] flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Close photo view (Esc)"
             >
-              <X size={32} />
+              <X size={20} />
             </button>
-            <motion.img
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              src={selectedImage}
-              alt="Expanded view"
-              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
+          </div>
+
+          {/* Left Arrow */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              showPrev();
+            }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-[#1A221E] border border-white/20 text-[#F5F2EB] hover:bg-[#F5F2EB] hover:text-[#1A221E] flex items-center justify-center transition-colors cursor-pointer"
+            aria-label="Previous photo (Left arrow)"
+          >
+            <ChevronLeft size={24} />
+          </button>
+
+          {/* Right Arrow */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              showNext();
+            }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-[#1A221E] border border-white/20 text-[#F5F2EB] hover:bg-[#F5F2EB] hover:text-[#1A221E] flex items-center justify-center transition-colors cursor-pointer"
+            aria-label="Next photo (Right arrow)"
+          >
+            <ChevronRight size={24} />
+          </button>
+
+          {/* Image Container */}
+          <div 
+            className="max-w-4xl max-h-[85vh] flex flex-col items-center z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={photos[lightboxIndex].src}
+              alt={photos[lightboxIndex].caption}
+              className="max-h-[75vh] max-w-full object-contain rounded-xl shadow-2xl border border-white/10"
             />
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <p className="text-center text-xs text-[#F5F2EB]/90 mt-3 font-['Newsreader'] italic max-w-lg">
+              {photos[lightboxIndex].caption}
+            </p>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

@@ -1,181 +1,387 @@
-@custom-variant dark (&:is(.dark *));
-
 :root {
-  --font-size: 16px;
-  --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
-  --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
-  --destructive: #d4183d;
-  --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
-  --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
+  --bg-main: #F5F2EB;
+  --bg-card: #ECE7DC;
+  --bg-card-subtle: #E6E0D4;
+  --bg-dark: #0c0c0c;
+  --text-main: #1A221E;
+  --text-muted: #515B54;
+  --text-faint: #7A857E;
+  --accent-forest: #1E3A2B;
+  --accent-forest-hover: #15291E;
+  --accent-teak: #8A5229;
+  --border-subtle: rgba(26, 34, 30, 0.12);
+  --border-medium: rgba(26, 34, 30, 0.22);
+  --font-serif: 'Newsreader', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-input-background: var(--input-background);
-  --color-switch-background: var(--switch-background);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+  /* Calm Highland Animation Variables */
+  --ease-calm: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-reveal: 0.7s;
+  --dur-fast: 0.25s;
+  --dur-zoom: 0.6s;
+  --stagger-gap: 0.08s;
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: var(--font-sans);
+    line-height: 1.6;
   }
 
-  /**
-  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
-  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
-  */
+  h1, h2, h3, h4 {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    color: var(--text-main);
+    letter-spacing: -0.015em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent-forest) !important;
+    outline-offset: 2px !important;
+  }
+}
+
+/* Flatpickr Highland Palette Styling */
+.flatpickr-calendar {
+  background: #F5F2EB !important;
+  border: 1px solid rgba(26, 34, 30, 0.16) !important;
+  box-shadow: 0 12px 32px rgba(26, 34, 30, 0.12) !important;
+  color: #1A221E !important;
+}
+
+.flatpickr-calendar.arrowTop::before,
+.flatpickr-calendar.arrowTop::after {
+  border-bottom-color: #F5F2EB !important;
+}
+
+.flatpickr-calendar.arrowBottom::before,
+.flatpickr-calendar.arrowBottom::after {
+  border-top-color: #F5F2EB !important;
+}
+
+.flatpickr-months {
+  background: #ECE7DC !important;
+  color: #1A221E !important;
+  border-bottom: 1px solid rgba(26, 34, 30, 0.10) !important;
+}
+
+.flatpickr-months .flatpickr-month {
+  color: #1A221E !important;
+  fill: #1A221E !important;
+}
+
+.flatpickr-current-month {
+  color: #1A221E !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+  background: #ECE7DC !important;
+  color: #1A221E !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month {
+  background-color: #ECE7DC !important;
+}
+
+.flatpickr-current-month input.cur-year {
+  color: #1A221E !important;
+}
+
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+  color: #515B54 !important;
+  fill: #515B54 !important;
+}
+
+.flatpickr-months .flatpickr-prev-month:hover,
+.flatpickr-months .flatpickr-next-month:hover {
+  color: #1E3A2B !important;
+  fill: #1E3A2B !important;
+}
+
+span.flatpickr-weekday {
+  background: #ECE7DC !important;
+  color: #515B54 !important;
+  font-weight: 600 !important;
+}
+
+.flatpickr-day {
+  color: #1A221E !important;
+  border-radius: 6px !important;
+}
+
+.flatpickr-day:hover,
+.flatpickr-day:focus {
+  background: #ECE7DC !important;
+  border-color: #ECE7DC !important;
+  color: #1A221E !important;
+}
+
+.flatpickr-day.today {
+  border-color: #1E3A2B !important;
+  color: #1A221E !important;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected.inRange,
+.flatpickr-day.startRange.inRange,
+.flatpickr-day.endRange.inRange,
+.flatpickr-day.selected:focus,
+.flatpickr-day.startRange:focus,
+.flatpickr-day.endRange:focus,
+.flatpickr-day.selected:hover,
+.flatpickr-day.startRange:hover,
+.flatpickr-day.endRange:hover {
+  background: #1E3A2B !important;
+  border-color: #1E3A2B !important;
+  color: #F5F2EB !important;
+  font-weight: 700 !important;
+}
+
+.flatpickr-day.inRange {
+  background: rgba(30, 58, 43, 0.15) !important;
+  border-color: transparent !important;
+  color: #1A221E !important;
+  box-shadow: -5px 0 0 rgba(30, 58, 43, 0.15), 5px 0 0 rgba(30, 58, 43, 0.15) !important;
+}
+
+.flatpickr-day.flatpickr-disabled,
+.flatpickr-day.flatpickr-disabled:hover {
+  color: rgba(26, 34, 30, 0.25) !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  cursor: not-allowed !important;
+}
+
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay {
+  color: rgba(26, 34, 30, 0.35) !important;
+}
+
+/* 1. Top Banner (Hero) Animations */
+
+/* 1. Top Banner (Hero) Animations - Infinite & Continuous */
+
+/* Photo: continuous slow zoom in and out forever */
+@keyframes heroSlowZoom {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.hero-photo-animate {
+  animation: heroSlowZoom 22s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Mist: 2 soft white layers drifting left to right, looping continuously */
+@keyframes mistDrift1 {
+  0% {
+    transform: translateX(-8%) scale(1);
+  }
+  50% {
+    transform: translateX(8%) scale(1.04);
+  }
+  100% {
+    transform: translateX(-8%) scale(1);
+  }
+}
+
+@keyframes mistDrift2 {
+  0% {
+    transform: translateX(6%) scale(1.03);
+  }
+  50% {
+    transform: translateX(-6%) scale(1);
+  }
+  100% {
+    transform: translateX(6%) scale(1.03);
+  }
+}
+
+.hero-mist-1 {
+  background: radial-gradient(ellipse 70% 50% at 75% 45%, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 50%, transparent 80%);
+  animation: mistDrift1 45s ease-in-out infinite;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.hero-mist-2 {
+  background: radial-gradient(ellipse 65% 45% at 85% 60%, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 60%, transparent 80%);
+  animation: mistDrift2 65s ease-in-out infinite;
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* Lamp glow: gentle warm pulse always looping */
+@keyframes lampWarmth {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.70;
+    transform: scale(1.04);
+  }
+}
+
+.hero-lamp-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle 240px at 30% 60%, rgba(245, 180, 80, 0.30) 0%, rgba(245, 180, 80, 0.08) 50%, transparent 75%);
+  animation: lampWarmth 4s ease-in-out infinite;
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+
+/* Subtle continuous floating motion */
+@keyframes heroFloatAlways {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.hero-float-always {
+  animation: heroFloatAlways 4s ease-in-out infinite;
+}
+
+/* Text on load: fade in & slide up 20px (0.15s gap, 0.8s each) */
+@keyframes heroTextFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-text-1 {
+  animation: heroTextFadeUp 0.8s var(--ease-calm) 0.1s both;
+  will-change: opacity, transform;
+}
+
+.hero-text-2 {
+  animation: heroTextFadeUp 0.8s var(--ease-calm) 0.25s both;
+  will-change: opacity, transform;
+}
+
+.hero-text-3 {
+  animation: heroTextFadeUp 0.8s var(--ease-calm) 0.4s both;
+  will-change: opacity, transform;
+}
+
+.hero-text-4 {
+  animation: heroTextFadeUp 0.8s var(--ease-calm) 0.55s both;
+  will-change: opacity, transform;
+}
+
+.hero-text-5 {
+  animation: heroTextFadeUp 0.8s var(--ease-calm) 0.7s both;
+  will-change: opacity, transform;
+}
+
+/* 2. Whole Website Scroll Reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity var(--dur-reveal) var(--ease-calm),
+              transform var(--dur-reveal) var(--ease-calm);
+  will-change: opacity, transform;
+}
+
+.reveal.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered lists and cards */
+.stagger-group .reveal-item {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity var(--dur-reveal) var(--ease-calm),
+              transform var(--dur-reveal) var(--ease-calm);
+  transition-delay: calc(var(--stagger-i, 0) * var(--stagger-gap));
+  will-change: opacity, transform;
+}
+
+.stagger-group.is-revealed .reveal-item {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 3. Photos in Gallery Hover Zoom (Touch screens excluded) */
+@media (hover: hover) and (pointer: fine) {
+  .gallery-card-img {
+    transition: transform var(--dur-zoom) var(--ease-calm);
+  }
+  .gallery-card:hover .gallery-card-img {
+    transform: scale(1.04);
+  }
+}
+
+/* 4. Buttons and links hover (0.25s soft color transition / subtle underline) */
+.link-calm {
+  position: relative;
+  transition: color var(--dur-fast) var(--ease-calm);
+}
+
+.link-calm::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--dur-fast) var(--ease-calm);
+}
+
+.link-calm:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* 5. Accessibility: Prefers Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .hero-photo-animate,
+  .hero-mist-1,
+  .hero-mist-2,
+  .hero-lamp-glow,
+  .hero-text-1,
+  .hero-text-2,
+  .hero-text-3,
+  .hero-text-4,
+  .hero-text-5 {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  .reveal,
+  .stagger-group .reveal-item {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
 
   html {
-    font-size: var(--font-size);
-  }
-
-  h1 {
-    font-size: var(--text-2xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h2 {
-    font-size: var(--text-xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h3 {
-    font-size: var(--text-lg);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h4 {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  label {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  button {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  input {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-normal);
-    line-height: 1.5;
+    scroll-behavior: auto !important;
   }
 }

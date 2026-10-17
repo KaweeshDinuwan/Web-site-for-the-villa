@@ -1,4 +1,14 @@
-@import 'tailwindcss' source(none);
-@source '../**/*.{js,ts,jsx,tsx}';
+@import 'tailwindcss';
 
-@import 'tw-animate-css';
+@theme {
+  --font-serif: 'Newsreader', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --color-warm-bg: #F5F2EB;
+  --color-warm-card: #ECE7DC;
+  --color-warm-card-subtle: #E6E0D4;
+  --color-forest: #1E3A2B;
+  --color-forest-dark: #15291E;
+  --color-teak: #8A5229;
+  --color-ink: #1A221E;
+  --color-stone: #515B54;
+}
