@@ -1,75 +1,102 @@
-import { motion } from "motion/react";
-import { Users, BedDouble, Bath, Wifi, Car, Hotel } from "lucide-react";
-import room1 from "./Sources/room1.jpg";
+import outdoor3 from "./Sources/outdoor3.jpg";
 import living from "./Sources/living.jpg";
+import dining_table from "./Sources/dining table.jpg";
 
 export function About() {
-  const stats = [
-    { icon: Users, label: "Guests", value: "8" },
-    { icon: Hotel, label: "Bedrooms", value: "3" },
-    { icon: BedDouble, label: "Beds", value: "4" },
-    { icon: Bath, label: "Bathrooms", value: "2" },
-    { icon: Wifi, label: "High-Speed", value: "WiFi" },
-    { icon: Car, label: "Parking", value: "2" },
-  ];
-
   return (
-    <section className="py-24 bg-[#0a0a0a] text-[#F9F6F0]" id="the-villa">
-      <div className="container mx-auto px-6">
-        <div className="flex flex-col lg:flex-row gap-16 items-center">
+    <section className="py-18 md:py-24 bg-[#F5F2EB] text-[#1A221E] border-b border-[#1A221E]/10" id="house">
+      <div className="max-w-6xl mx-auto px-6">
+        
+        {/* Section Lead-in with Scroll Reveal */}
+        <div className="reveal max-w-2xl mb-12">
+          <span className="text-xs uppercase tracking-widest text-[#8A5229] font-bold block mb-2">
+            The Property &amp; Setting
+          </span>
+          <h2 className="font-['Newsreader'] text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight leading-tight">
+            Built for cool highland evenings, home cooking, and peaceful sleep.
+          </h2>
+        </div>
+
+        {/* Asymmetric Content Block: Wide Photo + Text Column */}
+        <div className="reveal grid grid-cols-1 lg:grid-cols-12 gap-10 items-start mb-14">
           
-          {/* Text Content */}
-          <div className="w-full lg:w-1/2 space-y-8">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-            >
-              <h4 className="text-[#D4AF37] font-['Montserrat'] tracking-widest uppercase text-sm mb-4">Discover The Villa</h4>
-              <h2 className="text-4xl md:text-5xl font-['Playfair_Display'] leading-tight mb-6">
-                A Sanctuary of <br />
-                <span className="italic text-white/80">Misty Elegance</span>
-              </h2>
-              <p className="font-['Montserrat'] text-white/60 leading-relaxed font-light mb-8">
-              Welcome to Nalaka Rest — a luxury mountain escape hidden within the breathtaking misty hills of Nuwara Eliya. Surrounded by rolling tea plantations, cool mountain air, and picturesque waterfalls, our villa offers a peaceful blend of comfort, privacy, and authentic Sri Lankan hospitality. Designed as your perfect “home away from home,” Nalaka Rest is ideal for family holidays, group retreats, and relaxing getaways with friends. Experience cozy interiors, scenic landscapes, and unforgettable moments in one of Sri Lanka’s most beautiful hill country destinations.
-              </p>
-              
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                {stats.map((stat, idx) => (
-                  <div key={idx} className="flex flex-col items-center bg-[#151515] p-4 rounded-xl border border-white/5 hover:border-[#D4AF37]/50 transition-colors">
-                    <stat.icon className="text-[#D4AF37] mb-2" size={24} />
-                    <span className="font-['Playfair_Display'] text-xl mb-1">{stat.value}</span>
-                    <span className="font-['Montserrat'] text-xs text-white/50 uppercase tracking-wider">{stat.label}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
+          {/* Main Panorama Image (7 cols) */}
+          <div className="lg:col-span-7 space-y-3">
+            <div className="rounded-2xl overflow-hidden border border-[#1A221E]/15 shadow-sm aspect-[16/10] bg-[#ECE7DC]">
+              <img
+                src={outdoor3}
+                alt="Nalaka Rest private villa illuminated in the evening"
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <p className="font-['Newsreader'] italic text-xs text-[#515B54] pl-1">
+              Nalaka Rest illuminated on a cool Nuwara Eliya evening.
+            </p>
           </div>
 
-          {/* Image Collage */}
-          <div className="w-full lg:w-1/2 relative h-[600px]">
-            <motion.img 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              src={room1}
-              alt="Villa Bedroom"
-              className="absolute top-0 right-0 w-3/4 h-[400px] object-cover rounded-2xl shadow-2xl"
-            />
-            <motion.img 
-              initial={{ opacity: 0, y: -30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              src={living}
-              alt="Villa Living Room"
-              className="absolute bottom-0 left-0 w-2/3 h-[350px] object-cover rounded-2xl shadow-2xl border-4 border-[#0a0a0a]"
-            />
+          {/* Real Story Text Column (5 cols) */}
+          <div className="lg:col-span-5 space-y-6 pt-2">
+            <div className="space-y-4 text-sm md:text-base text-[#515B54] leading-relaxed">
+              <p>
+                Nuwara Eliya sits at 1,860 meters above sea level. It is cold here compared to the rest of the island — temperatures routinely dip below 14°C at night, and eucalyptus and pine perfume the air.
+              </p>
+              <p>
+                We set up Nalaka Rest so you have an entire private house to yourself. Whether you are traveling as an extended Sri Lankan family or visiting the central hill country from abroad, the property gives you independence: your own gate, private parking, and no shared corridors.
+              </p>
+              <p>
+                You can brew your own morning pot of tea in the kitchen, sit on the lawn while the mist moves through the valley, and spend quiet evenings together without the rush of a commercial hotel.
+              </p>
+            </div>
+
+            {/* Host Note Box */}
+            <div className="bg-[#ECE7DC] p-5 rounded-xl border-l-4 border-[#1E3A2B] space-y-1">
+              <span className="font-['Newsreader'] text-base font-semibold text-[#1A221E] block">
+                A Note from the Host
+              </span>
+              <p className="text-xs text-[#515B54] leading-relaxed">
+                &ldquo;We live nearby and are always reachable on WhatsApp. If you need firewood, milk from the local dairy, or help finding a reliable tuk-tuk into Nuwara Eliya town, just let us know.&rdquo;
+              </p>
+            </div>
           </div>
 
         </div>
+
+        {/* 2 Photographic Vignettes: Living Room & Dining with Staggered Reveal */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-[#1A221E]/10 stagger-group">
+          
+          <div style={{ "--stagger-i": 0 } as React.CSSProperties} className="reveal-item space-y-3">
+            <div className="rounded-xl overflow-hidden border border-[#1A221E]/15 aspect-[4/3] bg-[#ECE7DC]">
+              <img
+                src={living}
+                alt="Main living room of Nalaka Rest with comfortable seating"
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <h3 className="font-['Newsreader'] text-xl font-medium text-[#1A221E]">The Living Hall</h3>
+            <p className="text-xs text-[#515B54] leading-relaxed">
+              Sofa seating for everyone with big windows that catch natural light. Heated in the evening when the mountain air cools down.
+            </p>
+          </div>
+
+          <div style={{ "--stagger-i": 1 } as React.CSSProperties} className="reveal-item space-y-3">
+            <div className="rounded-xl overflow-hidden border border-[#1A221E]/15 aspect-[4/3] bg-[#ECE7DC]">
+              <img
+                src={dining_table}
+                alt="Wood dining table at Nalaka Rest"
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <h3 className="font-['Newsreader'] text-xl font-medium text-[#1A221E]">Family Dining Table</h3>
+            <p className="text-xs text-[#515B54] leading-relaxed">
+              Seats up to 6 people right next to the kitchen. Set up for long family breakfasts and leisurely home-cooked dinners.
+            </p>
+          </div>
+
+        </div>
+
       </div>
     </section>
   );

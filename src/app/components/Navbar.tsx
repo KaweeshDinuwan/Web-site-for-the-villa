@@ -1,16 +1,9 @@
-import { motion } from "motion/react";
-import { Menu, X, Calendar, User, Search } from "lucide-react";
 import { useState, useEffect } from "react";
-import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export function cn(...inputs: (string | undefined | null | false)[]) {
-  return twMerge(clsx(inputs));
-}
+import { Phone, Menu, X, Calendar } from "lucide-react";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,76 +13,113 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navItems = [
-    "The Villa", "Gallery", "Amenities", "Experiences", "Reviews", "Location", "Contact"
+  const links = [
+    { label: "The House", href: "#house" },
+    { label: "Gallery", href: "#gallery" },
+    { label: "Kitchen & Comfort", href: "#comfort" },
+    { label: "Nearby", href: "#nearby" },
+    { label: "Guest Notes", href: "#notes" },
+    { label: "Inquire", href: "#inquire" },
   ];
 
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
+    <header 
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled 
-          ? "bg-[#0a0a0a]/90 backdrop-blur-md py-4 shadow-lg shadow-black/20" 
-          : "bg-transparent py-6"
-      )}
+          ? "bg-[#0c0c0c]/90 backdrop-blur-md border-b border-white/10 py-3.5 shadow-lg shadow-black/20 text-white" 
+          : "bg-gradient-to-b from-black/80 via-black/40 to-transparent py-5 text-white"
+      }`}
     >
-      <div className="container mx-auto px-6 flex justify-between items-center">
-        {/* Logo */}
-        <div className="text-2xl font-['Playfair_Display'] font-bold tracking-widest text-[#F9F6F0]">
-          VILLA<span className="text-[#D4AF37]">.</span>
-        </div>
+      <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
+        
+        {/* Brand Wordmark */}
+        <a href="#home" className="flex flex-col group">
+          <span className="font-['Newsreader'] text-2xl font-medium tracking-tight text-white group-hover:text-[#D4AF37] transition-colors duration-250">
+            Nalaka Rest
+          </span>
+          <span className="font-['Plus_Jakarta_Sans'] text-[10px] uppercase tracking-widest text-[#D4AF37] font-semibold">
+            Nuwara Eliya • 1,860m
+          </span>
+        </a>
 
-        {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center space-x-8">
-          {navItems.map((item) => (
-            <a 
-              key={item} 
-              href={`#${item.toLowerCase().replace(' ', '-')}`}
-              className="text-sm font-['Montserrat'] tracking-wider text-[#F9F6F0]/80 hover:text-[#D4AF37] transition-colors relative group"
+        {/* Desktop Navigation Links with Calm 0.25s Hover Underline */}
+        <nav className="hidden md:flex items-center gap-7 text-xs sm:text-sm font-['Plus_Jakarta_Sans']">
+          {links.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              className="link-calm text-white/80 hover:text-[#D4AF37] font-medium tracking-wide py-1"
             >
-              {item}
-              <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-[#D4AF37] transition-all duration-300 group-hover:w-full" />
+              {link.label}
             </a>
           ))}
-          <button className="bg-[#D4AF37] text-[#0a0a0a] px-6 py-2 rounded-full font-['Montserrat'] text-sm font-semibold tracking-wide hover:bg-[#F9F6F0] hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all duration-300">
-            BOOK NOW
-          </button>
+        </nav>
+
+        {/* Right Direct Action */}
+        <div className="hidden sm:flex items-center gap-4">
+          <a
+            href="tel:+94775099361"
+            className="flex items-center gap-1.5 text-xs text-white/80 hover:text-white font-medium transition-colors duration-250"
+            title="Call host directly"
+          >
+            <Phone size={13} className="text-[#D4AF37]" />
+            <span>+94 77 509 9361</span>
+          </a>
+
+          <a
+            href="#inquire"
+            className="inline-flex items-center gap-1.5 bg-[#D4AF37] text-[#0a0a0a] hover:bg-white hover:text-black px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-colors duration-250 shadow-sm"
+          >
+            <Calendar size={13} />
+            <span>Check Dates</span>
+          </a>
         </div>
 
-        {/* Mobile Toggle */}
-        <button 
-          className="lg:hidden text-[#F9F6F0]"
-          onClick={() => setIsOpen(!isOpen)}
+        {/* Mobile Hamburger Button */}
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="md:hidden text-white p-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]"
+          aria-label="Toggle navigation menu"
         >
-          {isOpen ? <X size={28} /> : <Menu size={28} />}
+          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
+
       </div>
 
-      {/* Mobile Nav */}
-      {isOpen && (
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="lg:hidden absolute top-full left-0 w-full bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-[#F9F6F0]/10 py-6 px-6 flex flex-col space-y-4 shadow-2xl"
-        >
-          {navItems.map((item) => (
-            <a 
-              key={item} 
-              href={`#${item.toLowerCase().replace(' ', '-')}`}
-              className="text-lg font-['Playfair_Display'] text-[#F9F6F0]/90 hover:text-[#D4AF37]"
-              onClick={() => setIsOpen(false)}
+      {/* Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-[#121212] border-b border-white/10 px-6 py-5 flex flex-col gap-4 text-sm font-medium text-white shadow-2xl">
+          {links.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-white/90 hover:text-[#D4AF37] py-1 border-b border-white/05 transition-colors duration-250"
             >
-              {item}
+              {link.label}
             </a>
           ))}
-          <button className="mt-4 w-full bg-[#D4AF37] text-[#0a0a0a] py-3 rounded-md font-['Montserrat'] font-semibold tracking-wider">
-            BOOK NOW
-          </button>
-        </motion.div>
+
+          <div className="pt-2 flex flex-col gap-3">
+            <a
+              href="tel:+94775099361"
+              className="flex items-center gap-2 text-xs text-white/80 py-1"
+            >
+              <Phone size={14} className="text-[#D4AF37]" />
+              <span>+94 77 509 9361</span>
+            </a>
+
+            <a
+              href="#inquire"
+              onClick={() => setMobileMenuOpen(false)}
+              className="bg-[#D4AF37] text-[#0a0a0a] text-center py-2.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm"
+            >
+              Check Availability
+            </a>
+          </div>
+        </div>
       )}
-    </motion.nav>
+    </header>
   );
 }

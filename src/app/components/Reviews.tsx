@@ -1,126 +1,84 @@
-import { motion } from "motion/react";
-import { Star, Quote } from "lucide-react";
+interface Testimonial {
+  id: number;
+  quote: string;
+  author: string;
+  location: string;
+  stayDate: string;
+}
 
-const reviews = [
+const quotes: Testimonial[] = [
   {
-    name: "Priya S.",
-    location: "Lucknow, India",
-    text: "The villa was absolutely breathtaking. The attention to detail was unmatched, and waking up to the peaceful surroundings was pure magic. A true slice of paradise.",
-    rating: 5,
-  },
-  {
-    name: "Ahmed R.",
-    location: "Malé, Maldives",
-    text: "From the private dining experiences to the stunning views, every moment felt curated for luxury. The staff was attentive and genuinely welcoming.",
-    rating: 5,
-  },
-  {
-    name: "Nadeesha P.",
+    id: 1,
+    quote: "The cool air in the morning and the view across the tea bushes with a hot mug of coffee was the highlight of our trip. The house is warm, the blankets are thick, and the geyser hot water shower actually works 24/7.",
+    author: "Kavinda & Dilani M.",
     location: "Colombo, Sri Lanka",
-    text: "The perfect blend of comfort, nature, and elegance. Every corner of the retreat felt thoughtfully designed and incredibly relaxing.",
-    rating: 5,
+    stayDate: "October 2026",
   },
   {
-    name: "Emily T.",
-    location: "London, England",
-    text: "An exceptional escape from city life. The atmosphere was tranquil, the service impeccable, and the experience unforgettable.",
-    rating: 4.5,
+    id: 2,
+    quote: "We spent five nights here with our two kids. Having a proper four-burner stove and a full fridge meant we could cook dinner ourselves after spending cold rainy afternoons walking around Nuwara Eliya town.",
+    author: "Sarah & David Jenkins",
+    location: "Melbourne, Australia",
+    stayDate: "September 2026",
   },
   {
-    name: "Michael D.",
-    location: "New York, USA",
-    text: "I've stayed at many luxury properties, but this retreat stands out for its authenticity and attention to detail.",
-    rating: 5,
-  },
-  {
-    name: "Sophie H.",
-    location: "Manchester, England",
-    text: "Beautiful surroundings, exceptional hospitality, and complete privacy. Everything exceeded our expectations.",
-    rating: 5,
-  },
-  {
-    name: "Ananya P.",
-    location: "Mumbai, India",
-    text: "The retreat offered the perfect balance between luxury and nature. Every experience felt personalized and memorable.",
-    rating: 4.5,
-  },
-  {
-    name: "Jessica L.",
-    location: "California, USA",
-    text: "The peaceful environment and thoughtful service made this one of the most relaxing holidays we've ever had.",
-    rating: 5,
+    id: 3,
+    quote: "Clean bathrooms, comfortable solid wood beds, and complete privacy behind our own gate. The host was always quick on WhatsApp when we had questions about local dairy and grocery shops.",
+    author: "Rohan & Family",
+    location: "Bangalore, India",
+    stayDate: "August 2026",
   },
 ];
 
 export function Reviews() {
   return (
-    <section
-      className="py-24 bg-[#0a0a0a] text-[#F9F6F0]"
-      id="reviews"
-    >
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <h4 className="text-[#D4AF37] font-['Montserrat'] tracking-widest uppercase text-sm mb-4">
-            Guest Book
-          </h4>
-          <h2 className="text-4xl md:text-5xl font-['Playfair_Display']">
-            Unforgettable Stays
+    <section className="py-20 md:py-24 bg-[#ECE7DC] text-[#1A221E] border-b border-[#1A221E]/10" id="notes">
+      <div className="max-w-6xl mx-auto px-6">
+        
+        {/* Section Header */}
+        <div className="max-w-xl mb-14">
+          <span className="text-xs uppercase tracking-widest text-[#8A5229] font-bold block mb-2">
+            Guest Words
+          </span>
+          <h2 className="font-['Newsreader'] text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight">
+            Notes from past visitors.
           </h2>
-          <p className="mt-4 text-white/60 max-w-2xl mx-auto">
-            Hear from guests who have experienced the serenity, luxury, and
-            hospitality of our retreat.
+          <p className="font-['Plus_Jakarta_Sans'] text-sm md:text-base text-[#515B54] mt-2">
+            No star widgets or marketing badges. Direct feedback from travelers who stayed at the house.
           </p>
         </div>
 
-        {/* Horizontal Scroll Reviews */}
-        <div className="overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory">
-          <div className="flex gap-8 pb-4 min-w-max">
-            {reviews.map((review, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{
-                  duration: 0.6,
-                  delay: idx * 0.1,
-                }}
-                className="w-[350px] bg-[#121212] p-8 rounded-2xl border border-white/5 relative flex-shrink-0 snap-start"
-              >
-                <Quote className="absolute top-6 right-6 text-[#D4AF37]/20 w-12 h-12" />
-
-                <div className="flex gap-1 mb-6">
-                  {Array.from({
-                    length: Math.floor(review.rating),
-                  }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className="text-[#D4AF37] fill-[#D4AF37]"
-                      size={16}
-                    />
-                  ))}
-                </div>
-
-                <p className="font-['Montserrat'] text-white/70 font-light leading-relaxed mb-8 italic">
-                  "{review.text}"
+        {/* 3 Editorial Pull-Quotes Grid (Static, readable, zero carousel dots/arrows) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+          {quotes.map((item, idx) => (
+            <div 
+              key={item.id}
+              className={`bg-[#F5F2EB] p-7 sm:p-8 rounded-2xl border border-[#1A221E]/10 flex flex-col justify-between min-h-[260px] ${
+                idx === 1 ? "md:translate-y-4" : ""
+              }`}
+            >
+              <div>
+                <span className="font-['Newsreader'] text-4xl text-[#8A5229] font-serif leading-none block mb-2">
+                  &ldquo;
+                </span>
+                <p className="font-['Newsreader'] italic text-base sm:text-lg text-[#1A221E] leading-relaxed">
+                  {item.quote}
                 </p>
+              </div>
 
-                <div className="border-t border-white/10 pt-4">
-                  <h4 className="font-['Playfair_Display'] text-lg">
-                    {review.name}
-                  </h4>
-                  <span className="font-['Montserrat'] text-xs text-white/50">
-                    {review.location}
-                  </span>
+              <div className="pt-6 mt-6 border-t border-[#1A221E]/10">
+                <p className="font-['Plus_Jakarta_Sans'] text-xs font-bold text-[#1A221E]">
+                  {item.author}
+                </p>
+                <div className="flex items-center justify-between text-[11px] text-[#515B54] mt-0.5">
+                  <span>{item.location}</span>
+                  <span className="text-[#8A5229] font-medium">{item.stayDate}</span>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              </div>
+            </div>
+          ))}
         </div>
 
-        <p className="text-center text-white/40 text-sm mt-8">
-          ← Swipe or use  to explore more guest reviews →
-        </p>
       </div>
     </section>
   );

@@ -2,6 +2,10 @@
 @import './tailwind.css';
 @import './theme.css';
 
+html {
+    scroll-behavior: smooth;
+}
+
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }

@@ -1,114 +1,105 @@
-import { motion } from "motion/react";
-import gregoryLake from "./Experienceplace/Gregorylake.jpg";
-import victoriaPark from "./Experienceplace/victoriapark.jpg";
-import pedroTeaEstate from "./Experienceplace/pedroteastate.jpg";
-import bomburuElla from "./Experienceplace/bomburuella.jpg";
-import pidurutalagala from "./Experienceplace/piduruthalagala.jpg";
-import shanthipura from "./Experienceplace/Shanthipura.jpg";
-import kandeEla from "./Experienceplace/kandeela.jpg";
-import seethaAmman from "./Experienceplace/seethakovila.jpg";
+import { MapPin, Clock, Compass } from "lucide-react";
 import hortonPlains from "./Experienceplace/hortanplace.jpg";
+import gregoryLake from "./Experienceplace/Gregorylake.jpg";
+import pedroTeaEstate from "./Experienceplace/pedroteastate.jpg";
 
-const experiences = [
-  {
-    title: "Gregory Lake",
-    desc: "Enjoy boat rides, lakeside walks, and breathtaking mountain views at Nuwara Eliya's most iconic attraction.",
-    image: gregoryLake,
-    link: "https://en.wikipedia.org/wiki/Lake_Gregory_(Nuwara_Eliya)"
-  },
-  {
-    title: "Victoria Park",
-    desc: "A beautifully landscaped park famous for colorful flower gardens, birdwatching, and peaceful strolls.",
-    image: victoriaPark,
-    link: "https://en.wikipedia.org/wiki/Victoria_Park,_Nuwara_Eliya"
-  },
-  {
-    title: "Pedro Tea Estate",
-    desc: "Discover the art of Ceylon tea production while exploring scenic tea plantations and factory tours.",
-    image: pedroTeaEstate,
-    link: "https://www.google.com/search?q=pedro+tea+estate+wikipedia&sca_esv=25795b5d4f09c1a9&biw=1536&bih=674&sxsrf=ANbL-n4o3JX-0ceRTP3TIYfK2Oe525_avw%3A1780582424377&ei=GIghaoDSFruuseMP-bCX2Q4&oq=Pedro+Tea+Estate+wiki&gs_lp=Egxnd3Mtd2l6LXNlcnAiFVBlZHJvIFRlYSBFc3RhdGUgd2lraSoCCAAyBhAAGBYYHjIIEAAYgAQYogQyBRAAGO8FMgUQABjvBTIIEAAYgAQYogQyCBAAGIAEGKIESOQWUMUBWKMScAF4AJABAJgB6wGgAfoJqgEDMi02uAEByAEA-AEBmAIGoALQCMICChAAGEcY1gQYsAPCAg0QABiABBiKBRhDGLADwgIIEAAYgAQYywGYAwCIBgGQBgqSBwUxLjAuNaAHmBmyBwMyLTW4B8sIwgcFMC4yLjTIBxWACAE&sclient=gws-wiz-serp"
-  },
-  {
-    title: "Bomburu Ella Falls",
-    desc: "Sri Lanka's widest waterfall, surrounded by lush forests and scenic hiking trails.",
-    image: bomburuElla,
-    link: "https://en.wikipedia.org/wiki/Bomburu_Ella"
-  },
-  {
-    title: "Pidurutalagala",
-    desc: "Visit Sri Lanka's highest mountain peak and enjoy spectacular panoramic views of the hill country.",
-    image: pidurutalagala,
-    link: "https://en.wikipedia.org/wiki/Pidurutalagala"
-  },
-  {
-    title: "Shanthipura View Point",
-    desc: "Experience stunning sunrise and sunset views from Sri Lanka's highest village.",
-    image: shanthipura,
-    link: "https://www.google.com/search?q=shanthipura+view+point+wikipedia&biw=1536&bih=674&sca_esv=25795b5d4f09c1a9&sxsrf=ANbL-n42VZueTdON5y3zKA-f5cJYWMyJ5Q%3A1780582621036&ei=3Yghaqz9AaCjseMP45WBwAk&oq=Shanthipura+View+Point+wiki&gs_lp=Egxnd3Mtd2l6LXNlcnAiG1NoYW50aGlwdXJhIFZpZXcgUG9pbnQgd2lraSoCCAAyBRAhGKABMgUQIRigAUjtGFC0A1i7FHABeAGQAQCYAf4BoAG0CKoBBTAuMS40uAEByAEA-AEBmAIGoALJCMICChAAGEcY1gQYsAPCAg0QABiABBiKBRhDGLADwgIIEAAYgAQYywHCAgYQABgWGB7CAgUQABjvBcICCBAAGIAEGKIEmAMAiAYBkAYKkgcFMS4xLjSgB5IPsgcFMC4xLjS4B8UIwgcFMC41LjHIBwyACAE&sclient=gws-wiz-serp"
-  },
-  {
-    title: "Kande Ela Reservoir",
-    desc: "A tranquil escape featuring picturesque waters, surrounding hills, and peaceful natural scenery.",
-    image: kandeEla,
-    link: "https://www.google.com/search?q=Kande+Ela+Reservoir&biw=1536&bih=674&sca_esv=25795b5d4f09c1a9&sxsrf=ANbL-n5VFcCCUlXdfuHY2hqd-gVhiHeNAA%3A1780582628995&ei=5Ighaq64PJ6gnesPm8aHsA0&ved=0ahUKEwiuuuCY4-2UAxUeUGcHHRvjAdYQ4dUDCBA&uact=5&oq=Kande+Ela+Reservoir&gs_lp=Egxnd3Mtd2l6LXNlcnAiE0thbmRlIEVsYSBSZXNlcnZvaXIyBxAAGIAEGBMyCBAAGBYYHhgTMggQABgWGB4YEzIIEAAYFhgeGBMyCBAAGBYYHhgTMggQABgWGB4YEzIIEAAYgAQYogQyCBAAGIAEGKIEMgUQABjvBTIIEAAYgAQYogRIiBZQ1w5Y1w5wAXgBkAEAmAGMAqABjAKqAQMyLTG4AQPIAQD4AQL4AQGYAgKgApkCwgIKEAAYRxjWBBiwA5gDAIgGAZAGCJIHBTEuMC4xoAepBbIHAzItMbgHkwLCBwMyLTLIBwiACAE&sclient=gws-wiz-serp"
-  },
-  {
-    title: "Seetha Amman Temple",
-    desc: "A sacred Hindu temple associated with the Ramayana legend and surrounded by beautiful landscapes.",
-    image: seethaAmman,
-    link: "https://en.wikipedia.org/wiki/Seetha_Amman_Temple"
-  },
+const nearbyPlaces = [
   {
     title: "Horton Plains National Park",
-    desc: "Explore dramatic cliffs, cloud forests, and the famous World's End viewpoint.",
+    tag: "UNESCO Cloud Forest & Trekking",
+    time: "~50 min drive",
+    distance: "approx. 28 km",
     image: hortonPlains,
-    link: "https://en.wikipedia.org/wiki/Horton_Plains_National_Park"
+    desc: "Vast windswept highland plateau home to the famous 870m World's End drop, Baker's Falls, sambar deer herds, and crisp mountain hiking trails.",
+    tip: "Suggested 5:30 AM departure to experience panoramic views before the morning valley mist rolls in."
+  },
+  {
+    title: "Gregory Lake & Promenade",
+    tag: "Waterside Leisure & Boating",
+    time: "~10 min drive",
+    distance: "approx. 3.5 km",
+    image: gregoryLake,
+    desc: "Nuwara Eliya's iconic centerpiece lake surrounded by misty hill peaks. Enjoy peaceful waterfront paths, pedal boats, pony rides, and warm coffee stalls.",
+    tip: "Ideal for a relaxing late afternoon stroll or watching the sunset over the highland waters."
+  },
+  {
+    title: "Pedro Tea Estate & Factory",
+    tag: "Historic Ceylon Tea Heritage",
+    time: "~15 min drive",
+    distance: "approx. 5.5 km",
+    image: pedroTeaEstate,
+    desc: "A working 19th-century Ceylon tea plantation and factory. Walk through lush emerald-green tea terraces and see traditional tea production firsthand.",
+    tip: "Enjoy a fresh cup of pure single-origin highland black tea on the factory's open veranda."
   }
 ];
 
 export function Experiences() {
   return (
-    <section className="py-24 bg-[#121212] text-[#F9F6F0]" id="experiences">
-      <div className="container mx-auto px-6">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16">
-          <div>
-            <h4 className="text-[#D4AF37] font-['Montserrat'] tracking-widest uppercase text-sm mb-4">Discover Sri Lanka</h4>
-            <h2 className="text-4xl md:text-5xl font-['Playfair_Display']">Nearby Attractions</h2>
-          </div>
-          <button className="mt-6 md:mt-0 text-[#F9F6F0] border-b border-[#D4AF37] pb-1 font-['Montserrat'] text-sm uppercase tracking-widest hover:text-[#D4AF37] transition-colors">
-            View All Places
-          </button>
+    <section className="py-16 md:py-24 bg-[#ECE7DC] text-[#1A221E] border-b border-[#1A221E]/10" id="nearby">
+      <div className="max-w-6xl mx-auto px-6">
+        
+        {/* Section Header */}
+        <div className="max-w-2xl mb-12">
+          <span className="text-xs uppercase tracking-widest text-[#8A5229] font-bold block mb-2">
+            Around Nalaka Rest · Nearby Attractions
+          </span>
+          <h2 className="font-['Newsreader'] text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight">
+            3 Iconic Highland Places Nearby.
+          </h2>
+          <p className="font-['Plus_Jakarta_Sans'] text-sm md:text-base text-[#515B54] mt-2 leading-relaxed">
+            Nalaka Rest provides quiet mountain seclusion while keeping Nuwara Eliya’s most famous sights within easy reach by car, van, or local tuk-tuk.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {experiences.map((exp, idx) => (
-            <motion.a
-              key={idx}
-              href={exp.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: idx * 0.15 }}
-              className="group relative h-[450px] rounded-2xl overflow-hidden cursor-pointer block"
+        {/* 3 Places Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-7 lg:gap-8">
+          {nearbyPlaces.map((place) => (
+            <div
+              key={place.title}
+              className="bg-[#F5F2EB] rounded-2xl overflow-hidden border border-[#1A221E]/12 flex flex-col justify-between shadow-sm hover:border-[#1A221E]/30 hover:shadow-md transition-all duration-300 group"
             >
-              <img
-                src={exp.image}
-                alt={exp.title}
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+              <div>
+                {/* Photo with Overlay Badge */}
+                <div className="relative aspect-[16/10] sm:aspect-[4/3] w-full overflow-hidden bg-[#E6E0D4]">
+                  <img
+                    src={place.image}
+                    alt={place.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 block"
+                  />
+                  {/* Drive Time Pill Badge */}
+                  <div className="absolute top-3 right-3 bg-black/75 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
+                    <Clock size={13} className="text-[#D4AF37]" />
+                    <span>{place.time}</span>
+                  </div>
+                </div>
 
-              <div className="absolute bottom-0 left-0 p-8 w-full">
-                <h3 className="text-2xl font-['Playfair_Display'] text-white mb-2">{exp.title}</h3>
-                <p className="text-white/70 font-['Montserrat'] text-sm font-light opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                  {exp.desc}
-                </p>
+                {/* Card Content */}
+                <div className="p-6">
+                  <span className="text-[11px] uppercase tracking-wider text-[#8A5229] font-bold block mb-1.5">
+                    {place.tag}
+                  </span>
+                  <h3 className="font-['Newsreader'] text-2xl font-medium text-[#1A221E] mb-2 leading-snug">
+                    {place.title}
+                  </h3>
+                  <p className="font-['Plus_Jakarta_Sans'] text-xs sm:text-sm text-[#515B54] leading-relaxed">
+                    {place.desc}
+                  </p>
+                </div>
               </div>
-            </motion.a>
+
+              {/* Helpful Tip Footer */}
+              <div className="px-6 pb-6 pt-0">
+                <div className="pt-3.5 border-t border-[#1A221E]/10 flex items-start gap-2">
+                  <MapPin size={14} className="text-[#1E3A2B] shrink-0 mt-0.5" />
+                  <p className="text-xs text-[#515B54] font-['Newsreader'] italic leading-relaxed">
+                    Tip: {place.tip}
+                  </p>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
+
       </div>
     </section>
   );
