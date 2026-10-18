@@ -4,12 +4,12 @@ import dining_table from "./Sources/dining table.jpg";
 
 export function About() {
   return (
-    <section className="pt-14 md:pt-18 pb-6 md:pb-8 bg-white text-[#132E20]" id="house">
+    <section className="pt-5 md:pt-8 pb-6 md:pb-8 bg-white text-[#132E20]" id="house">
       <div className="max-w-6xl mx-auto px-6">
         
         {/* Section Lead-in with Scroll Reveal */}
-        <div className="reveal max-w-2xl mb-8 md:mb-10">
-          <span className="text-xs uppercase tracking-widest text-[#1A432E] font-bold block mb-2">
+        <div className="reveal max-w-2xl mb-6 md:mb-8">
+          <span className="text-xs uppercase tracking-widest text-[#1A432E] font-bold block mb-1.5">
             The Property &amp; Setting
           </span>
           <h2 className="font-['Newsreader'] text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight leading-tight">

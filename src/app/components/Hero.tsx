@@ -149,7 +149,7 @@ export function Hero() {
   return (
     <section
       id="home"
-      className="relative min-h-[700px] h-screen w-full flex flex-col justify-between items-center text-center px-4 sm:px-6 pt-[90px] sm:pt-[100px] pb-6 sm:pb-8 overflow-hidden z-10"
+      className="relative min-h-[680px] h-screen w-full flex flex-col justify-between items-center text-center px-4 sm:px-6 pt-[90px] sm:pt-[100px] pb-3 sm:pb-4 overflow-hidden z-10"
     >
       {/* BACKGROUND: Full-bleed photo with subtle slow zoom-out effect & gradient overlay */}
       <div className="absolute inset-0 w-full h-full overflow-hidden z-0 pointer-events-none">
