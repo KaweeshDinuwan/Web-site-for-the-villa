@@ -297,8 +297,8 @@ span.flatpickr-weekday {
 
 /* 2. Whole Website Scroll Reveal */
 .reveal {
-  opacity: 0;
-  will-change: opacity, transform, filter;
+  opacity: 1;
+  will-change: opacity, transform;
 }
 
 .reveal.is-revealed {
@@ -307,8 +307,8 @@ span.flatpickr-weekday {
 
 /* Staggered lists and cards */
 .stagger-group .reveal-item {
-  opacity: 0;
-  will-change: opacity, transform, filter;
+  opacity: 1;
+  will-change: opacity, transform;
 }
 
 .stagger-group.is-revealed .reveal-item {

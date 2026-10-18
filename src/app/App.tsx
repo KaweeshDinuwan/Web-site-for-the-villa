@@ -92,12 +92,12 @@ export default function App() {
                 opacity: 1,
                 y: 0,
                 filter: "blur(0px)",
-                duration: 0.85,
+                duration: 0.75,
                 ease: "power2.out",
-                clearProps: "transform,filter",
+                clearProps: "all",
                 scrollTrigger: {
                   trigger: el,
-                  start: "top 88%",
+                  start: "top 95%",
                   toggleActions: "play none none none",
                   once: true,
                 },
@@ -131,6 +131,7 @@ export default function App() {
 
       // (c) Cards: Fade up one by one with a small delay (stagger)
       const cardContainers = [
+        "#house .stagger-group",
         "#comfort .stagger-group",
         "#nearby .grid",
         "#notes .grid",
@@ -155,10 +156,10 @@ export default function App() {
                 duration: 0.75,
                 stagger: 0.1,
                 ease: "power2.out",
-                clearProps: "transform,filter",
+                clearProps: "all",
                 scrollTrigger: {
                   trigger: container,
-                  start: "top 85%",
+                  start: "top 95%",
                   toggleActions: "play none none none",
                   once: true,
                 },

@@ -7,8 +7,8 @@ export function About() {
     <section className="pt-5 md:pt-8 pb-6 md:pb-8 bg-white text-[#132E20]" id="house">
       <div className="max-w-6xl mx-auto px-6">
         
-        {/* Section Lead-in with Scroll Reveal */}
-        <div className="reveal max-w-2xl mb-6 md:mb-8">
+        {/* Section Lead-in */}
+        <div className="max-w-2xl mb-6 md:mb-8">
           <span className="text-xs uppercase tracking-widest text-[#1A432E] font-bold block mb-1.5">
             The Property &amp; Setting
           </span>
@@ -18,7 +18,7 @@ export function About() {
         </div>
 
         {/* Asymmetric Content Block: Wide Photo + Text Column */}
-        <div className="reveal grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start mb-8 md:mb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start mb-8 md:mb-10">
           
           {/* Main Panorama Image (7 cols) */}
           <div className="lg:col-span-7 space-y-3">
