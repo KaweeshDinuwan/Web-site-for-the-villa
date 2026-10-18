@@ -5,19 +5,16 @@ import {
   Send, 
   CheckCircle2, 
   X, 
-  Quote, 
-  Trash2, 
-  ThumbsUp, 
-  Filter, 
-  Search, 
   Sparkles, 
   Calendar, 
   MapPin, 
   User, 
-  Tag, 
   Check, 
   MessageSquareQuote,
-  ShieldCheck
+  ShieldCheck,
+  ThumbsUp,
+  AlertCircle,
+  MessageCircle
 } from "lucide-react";
 
 export interface Testimonial {
@@ -33,6 +30,9 @@ export interface Testimonial {
   helpfulCount?: number;
   isUserSubmitted?: boolean;
   avatarColor?: string;
+  contact?: string;
+  status?: "approved" | "pending";
+  createdAt?: string;
 }
 
 const defaultQuotes: Testimonial[] = [
@@ -48,6 +48,7 @@ const defaultQuotes: Testimonial[] = [
     highlights: ["24/7 Hot Water", "Tea Estate Views", "Cozy Blankets"],
     helpfulCount: 14,
     avatarColor: "#1E3A2B",
+    status: "approved",
   },
   {
     id: 2,
@@ -61,6 +62,7 @@ const defaultQuotes: Testimonial[] = [
     highlights: ["Full Kitchen", "Gated Privacy", "Kids Friendly"],
     helpfulCount: 11,
     avatarColor: "#8A5229",
+    status: "approved",
   },
   {
     id: 3,
@@ -74,6 +76,7 @@ const defaultQuotes: Testimonial[] = [
     highlights: ["Teak Wood Beds", "Responsive Host", "Spotless Clean"],
     helpfulCount: 18,
     avatarColor: "#3B5249",
+    status: "approved",
   },
   {
     id: 4,
@@ -87,12 +90,21 @@ const defaultQuotes: Testimonial[] = [
     highlights: ["Quiet & Private", "Hot Water Shower", "Hiking Base"],
     helpfulCount: 8,
     avatarColor: "#515B54",
+    status: "approved",
   },
 ];
 
-const LOCAL_STORAGE_KEY = "villa_guest_reviews_v1";
+const LOCAL_STORAGE_PENDING_KEY = "villa_pending_reviews_v1";
 const HELPFUL_STORAGE_KEY = "villa_reviews_helpful_votes_v1";
+const RATE_LIMIT_KEY = "villa_review_last_submit_ts";
 const HOST_WHATSAPP = "94775099361";
+const SLIDE_SPEED_PX_PER_SEC = 40;
+const MOBILE_SPEED_PX_PER_SEC = 30;
+const AUTO_PUBLISH = false;
+
+// Backend endpoint configuration (e.g. Web3Forms or Formspree)
+// To forward submitted notes directly to your email, paste your access key here:
+const WEB3FORMS_ACCESS_KEY = ""; 
 
 const TRIP_TYPES = [
   "Family with Kids",
@@ -102,15 +114,13 @@ const TRIP_TYPES = [
   "Extended Stay / Workation",
 ];
 
-const AVAILABLE_HIGHLIGHTS = [
-  "24/7 Hot Water",
-  "Tea Estate Views",
-  "Full Kitchen & Stove",
-  "Cozy Thick Blankets",
-  "Gated Private Compound",
-  "Warm Wooden Beds",
-  "Spotless Bathrooms",
-  "Attentive Host on WhatsApp",
+const AVAILABLE_TAGS = [
+  "Quiet & Private",
+  "Hot Water Shower",
+  "Hiking Base",
+  "Spotless Clean",
+  "Families",
+  "Couples",
 ];
 
 const AVATAR_COLORS = [
@@ -121,7 +131,26 @@ const AVATAR_COLORS = [
   { label: "Amber Clay", color: "#A36034" },
 ];
 
-/** Custom lightweight confetti burst animation */
+/** Helper: current YYYY-MM */
+function getCurrentYearMonth(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}`;
+}
+
+/** Helper: format YYYY-MM to readable string e.g. "October 2026" */
+function formatYearMonthToText(ym: string): string {
+  if (!ym) return "";
+  const parts = ym.split("-");
+  if (parts.length < 2) return ym;
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const d = new Date(year, month, 1);
+  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+}
+
+/** Custom lightweight celebratory confetti burst */
 function fireConfetti() {
   try {
     const canvas = document.createElement("canvas");
@@ -168,14 +197,14 @@ function fireConfetti() {
     }
 
     let animationId: number;
-    let startTime = Date.now();
+    const startTime = Date.now();
 
     function draw() {
       if (!ctx) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       particles.forEach((p) => {
-        p.vy += 0.22; // gravity
+        p.vy += 0.22;
         p.x += p.vx;
         p.y += p.vy;
         p.tiltAngle += p.tiltAngleInc;
@@ -201,60 +230,443 @@ function fireConfetti() {
 
     animationId = requestAnimationFrame(draw);
   } catch {
-    // Graceful fallback if DOM fails
+    // Fail silently if canvas unsupported
   }
+}
+
+interface ReviewCardItemProps {
+  item: Testimonial;
+  isClone?: boolean;
+  hasUpvoted: boolean;
+  onUpvote: (id: string | number) => void;
+  getInitials: (name: string) => string;
+}
+
+function ReviewCardItem({
+  item,
+  isClone = false,
+  hasUpvoted,
+  onUpvote,
+  getInitials,
+}: ReviewCardItemProps) {
+  const starCount = item.rating || 5;
+
+  return (
+    <article
+      id={isClone ? undefined : `review-card-${item.id}`}
+      aria-hidden={isClone ? "true" : undefined}
+      className="w-[85vw] max-w-[320px] sm:w-[340px] shrink-0 bg-[#F5F2EB] p-5 rounded-2xl border border-[#1A221E]/10 hover:border-[#1A221E]/25 hover:shadow-md flex flex-col justify-between shadow-xs transition-shadow duration-200 select-none text-left"
+    >
+      <div>
+        {/* Top Bar: Stars + Verified Badge */}
+        <div className="flex items-center justify-between gap-2 mb-2.5">
+          <div className="flex items-center gap-0.5 text-[#8A5229]" title={`${starCount} / 5 Stars`}>
+            {[...Array(starCount)].map((_, i) => (
+              <Star key={i} size={14} className="fill-[#8A5229] text-[#8A5229]" />
+            ))}
+          </div>
+
+          <span className="text-[10px] font-medium text-[#515B54] bg-[#1A221E]/5 px-2 py-0.5 rounded-full shrink-0">
+            Verified Guest
+          </span>
+        </div>
+
+        {/* Optional Review Title */}
+        {item.title && (
+          <h4 className="font-['Newsreader'] text-[17px] font-semibold text-[#1A221E] mb-1.5 leading-snug line-clamp-2">
+            {item.title}
+          </h4>
+        )}
+
+        {/* Review Text clamped to 6 lines */}
+        <p className="font-['Newsreader'] italic text-[14px] sm:text-[14.5px] text-[#1A221E]/90 leading-[1.6] mb-3 line-clamp-6">
+          &ldquo;{item.quote}&rdquo;
+        </p>
+
+        {/* Highlights tags if provided */}
+        {item.highlights && item.highlights.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {item.highlights.map((h, i) => (
+              <span
+                key={i}
+                className="text-[11px] font-medium bg-[#1A221E]/5 text-[#515B54] px-2 py-0.5 rounded-md"
+              >
+                • {h}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Pinned Bottom Footer */}
+      <div className="mt-auto pt-3.5 border-t border-[#1A221E]/10 flex items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div
+            className="w-7 h-7 rounded-full text-white text-[11px] font-bold flex items-center justify-center shrink-0 shadow-xs"
+            style={{ backgroundColor: item.avatarColor || "#1E3A2B" }}
+          >
+            {getInitials(item.author)}
+          </div>
+          <div className="min-w-0">
+            <p className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#1A221E] truncate">
+              {item.author}
+            </p>
+            <p className="text-xs text-[#515B54] truncate">
+              {item.location} • <span className="text-[#8A5229] font-medium">{item.stayDate}</span>
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          tabIndex={isClone ? -1 : 0}
+          aria-hidden={isClone ? "true" : undefined}
+          onClick={(e) => {
+            e.stopPropagation();
+            onUpvote(item.id);
+          }}
+          disabled={hasUpvoted}
+          title={hasUpvoted ? "You found this helpful" : "Mark as helpful"}
+          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all shrink-0 cursor-pointer ${
+            hasUpvoted
+              ? "bg-[#1E3A2B]/10 text-[#1E3A2B] cursor-default font-bold"
+              : "text-[#515B54] hover:text-[#1A221E] hover:bg-[#1A221E]/5 active:scale-95"
+          }`}
+        >
+          <ThumbsUp size={11} className={hasUpvoted ? "fill-current" : ""} />
+          <span>{item.helpfulCount || 0}</span>
+        </button>
+      </div>
+    </article>
+  );
+}
+
+interface AutoSlidingReviewsCarouselProps {
+  items: Testimonial[];
+  upvotedIds: string[];
+  onUpvote: (id: string | number) => void;
+  getInitials: (name: string) => string;
+}
+
+function AutoSlidingReviewsCarousel({
+  items,
+  upvotedIds,
+  onUpvote,
+  getInitials,
+}: AutoSlidingReviewsCarouselProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const posRef = useRef(0);
+  const speedRef = useRef(SLIDE_SPEED_PX_PER_SEC);
+  const targetSpeedRef = useRef(SLIDE_SPEED_PX_PER_SEC);
+  const isHoveredRef = useRef(false);
+  const isFocusedRef = useRef(false);
+  const isTouchingRef = useRef(false);
+  const isDraggingRef = useRef(false);
+  const isVisibleRef = useRef(true);
+  const isTabVisibleRef = useRef(true);
+  const dragStartXRef = useRef(0);
+  const dragStartPosRef = useRef(0);
+  const touchResumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTimeRef = useRef<number | null>(null);
+  const setSpanRef = useRef(0);
+  const rAFIdRef = useRef<number | null>(null);
+
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handleChange = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  const repeatCount = useMemo(() => {
+    if (items.length === 0) return 1;
+    return Math.max(3, Math.ceil(3600 / (items.length * 360)));
+  }, [items.length]);
+
+  const measureSetSpan = () => {
+    const track = trackRef.current;
+    if (!track || items.length === 0) return;
+    const firstCard = track.children[0] as HTMLElement | undefined;
+    const nextSetFirstCard = track.children[items.length] as HTMLElement | undefined;
+    if (firstCard && nextSetFirstCard) {
+      const measured = nextSetFirstCard.offsetLeft - firstCard.offsetLeft;
+      if (measured > 0) {
+        setSpanRef.current = measured;
+        posRef.current = posRef.current % measured;
+      }
+    }
+  };
+
+  useEffect(() => {
+    measureSetSpan();
+    const handleResize = () => {
+      measureSetSpan();
+    };
+    window.addEventListener("resize", handleResize, { passive: true });
+    return () => window.removeEventListener("resize", handleResize);
+  }, [items, repeatCount]);
+
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+
+    const track = trackRef.current;
+    if (!track) return;
+
+    let isRunning = true;
+
+    const tick = (time: number) => {
+      if (!isRunning) return;
+
+      if (lastTimeRef.current === null) {
+        lastTimeRef.current = time;
+      }
+      const dt = Math.min(0.1, (time - lastTimeRef.current) / 1000);
+      lastTimeRef.current = time;
+
+      const isMobile = window.innerWidth < 640;
+      const baseSpeed = isMobile ? MOBILE_SPEED_PX_PER_SEC : SLIDE_SPEED_PX_PER_SEC;
+
+      const shouldPause =
+        isHoveredRef.current ||
+        isFocusedRef.current ||
+        isTouchingRef.current ||
+        isDraggingRef.current ||
+        !isVisibleRef.current ||
+        !isTabVisibleRef.current;
+
+      targetSpeedRef.current = shouldPause ? 0 : baseSpeed;
+
+      // Smooth deceleration / acceleration over ~300ms
+      speedRef.current += (targetSpeedRef.current - speedRef.current) * (1 - Math.exp(-dt / 0.08));
+
+      if (!isDraggingRef.current) {
+        posRef.current += speedRef.current * dt;
+
+        const span = setSpanRef.current;
+        if (span > 0) {
+          posRef.current = posRef.current % span;
+        }
+
+        track.style.transform = `translate3d(-${posRef.current}px, 0, 0)`;
+      }
+
+      rAFIdRef.current = requestAnimationFrame(tick);
+    };
+
+    rAFIdRef.current = requestAnimationFrame(tick);
+
+    const handleVisibilityChange = () => {
+      isTabVisibleRef.current = !document.hidden;
+      lastTimeRef.current = performance.now();
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        isVisibleRef.current = entry.isIntersecting;
+        lastTimeRef.current = performance.now();
+      },
+      { threshold: 0.05 }
+    );
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => {
+      isRunning = false;
+      if (rAFIdRef.current !== null) {
+        cancelAnimationFrame(rAFIdRef.current);
+      }
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      observer.disconnect();
+      if (touchResumeTimerRef.current) {
+        clearTimeout(touchResumeTimerRef.current);
+      }
+    };
+  }, [prefersReducedMotion, items]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    isTouchingRef.current = true;
+    isDraggingRef.current = false;
+    dragStartXRef.current = e.touches[0].clientX;
+    dragStartPosRef.current = posRef.current;
+    if (touchResumeTimerRef.current) {
+      clearTimeout(touchResumeTimerRef.current);
+      touchResumeTimerRef.current = null;
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const currentX = e.touches[0].clientX;
+    const diff = currentX - dragStartXRef.current;
+    if (Math.abs(diff) > 6) {
+      isDraggingRef.current = true;
+      let newPos = dragStartPosRef.current - diff;
+      const span = setSpanRef.current;
+      if (span > 0) {
+        while (newPos < 0) newPos += span;
+        newPos = newPos % span;
+      }
+      posRef.current = newPos;
+      if (trackRef.current) {
+        trackRef.current.style.transform = `translate3d(-${posRef.current}px, 0, 0)`;
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    isDraggingRef.current = false;
+    touchResumeTimerRef.current = setTimeout(() => {
+      isTouchingRef.current = false;
+      lastTimeRef.current = performance.now();
+    }, 1500);
+  };
+
+  if (prefersReducedMotion) {
+    return (
+      <div
+        role="region"
+        aria-label="Guest reviews"
+        aria-roledescription="carousel"
+        className="w-full overflow-x-auto py-3 scroll-smooth snap-x snap-mandatory flex gap-5"
+      >
+        {items.map((item) => (
+          <div key={item.id} className="snap-center">
+            <ReviewCardItem
+              item={item}
+              isClone={false}
+              hasUpvoted={upvotedIds.includes(String(item.id))}
+              onUpvote={onUpvote}
+              getInitials={getInitials}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      role="region"
+      aria-label="Guest reviews"
+      aria-roledescription="carousel"
+      onMouseEnter={() => {
+        isHoveredRef.current = true;
+      }}
+      onMouseLeave={() => {
+        isHoveredRef.current = false;
+      }}
+      onFocusCapture={() => {
+        isFocusedRef.current = true;
+      }}
+      onBlurCapture={(e) => {
+        if (!containerRef.current?.contains(e.relatedTarget as Node)) {
+          isFocusedRef.current = false;
+        }
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+      className="relative w-full overflow-hidden py-3"
+      style={{
+        maskImage: "linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%)",
+        WebkitMaskImage: "linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%)",
+      }}
+    >
+      <div
+        ref={trackRef}
+        className="flex gap-5 items-stretch will-change-transform"
+        style={{ width: "max-content" }}
+      >
+        {Array.from({ length: repeatCount }).map((_, repeatIndex) =>
+          items.map((item) => {
+            const isClone = repeatIndex > 0;
+            return (
+              <ReviewCardItem
+                key={`${repeatIndex}-${item.id}`}
+                item={item}
+                isClone={isClone}
+                hasUpvoted={upvotedIds.includes(String(item.id))}
+                onUpvote={onUpvote}
+                getInitials={getInitials}
+              />
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function Reviews() {
   const [reviews, setReviews] = useState<Testimonial[]>(defaultQuotes);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [upvotedIds, setUpvotedIds] = useState<string[]>([]);
-  const [activeFilter, setActiveFilter] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [newlyCreatedId, setNewlyCreatedId] = useState<string | number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // Form State
+  // Upvotes
+  const [upvotedIds, setUpvotedIds] = useState<string[]>([]);
+
+  // Teaser hover rating
+  const [teaserHoverRating, setTeaserHoverRating] = useState(0);
+
+  // Form State (Defaults fixed: rating starts empty 0, tripType starts empty "")
+  const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
   const [author, setAuthor] = useState("");
   const [location, setLocation] = useState("");
-  const [stayDate, setStayDate] = useState("");
-  const [rating, setRating] = useState(5);
-  const [hoverRating, setHoverRating] = useState(0);
-  const [tripType, setTripType] = useState("Family with Kids");
+  const [stayDate, setStayDate] = useState(getCurrentYearMonth());
+  const [tripType, setTripType] = useState("");
   const [title, setTitle] = useState("");
   const [quote, setQuote] = useState("");
-  const [selectedHighlights, setSelectedHighlights] = useState<string[]>([
-    "24/7 Hot Water",
-    "Tea Estate Views",
-  ]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [contact, setContact] = useState("");
   const [avatarColor, setAvatarColor] = useState("#1E3A2B");
   const [sendToWhatsApp, setSendToWhatsApp] = useState(true);
 
-  // Validation & Feedback
-  const [errors, setErrors] = useState<{ author?: string; quote?: string }>({});
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  // Spam protection & validation
+  const [honeypot, setHoneypot] = useState("");
+  const [errors, setErrors] = useState<{ rating?: string; author?: string; quote?: string; summary?: string }>({});
 
+  // Thank You confirmation states
+  const [showThankYouBanner, setShowThankYouBanner] = useState(false);
+  const [submittedReview, setSubmittedReview] = useState<{
+    author: string;
+    rating: number;
+    quote: string;
+    stayDate: string;
+    location: string;
+    title?: string;
+    whatsappUrl?: string;
+  } | null>(null);
+
+  // IDs and Refs
   const authorInputId = useId();
   const locationInputId = useId();
   const stayDateInputId = useId();
   const titleInputId = useId();
   const quoteInputId = useId();
+  const contactInputId = useId();
   const modalRef = useRef<HTMLDivElement>(null);
-  const reviewsContainerRef = useRef<HTMLDivElement>(null);
+  const triggerSourceRef = useRef<HTMLElement | null>(null);
+  const ratingCardRef = useRef<HTMLDivElement>(null);
+  const authorInputRef = useRef<HTMLInputElement>(null);
+  const quoteInputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load reviews and upvotes from localStorage
+  // Load helpful upvotes from localStorage
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (stored) {
-        const parsed: Testimonial[] = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setReviews([...parsed, ...defaultQuotes]);
-        }
-      }
-    } catch {
-      // Ignore localStorage errors
-    }
-
     try {
       const storedVotes = localStorage.getItem(HELPFUL_STORAGE_KEY);
       if (storedVotes) {
@@ -265,18 +677,76 @@ export function Reviews() {
     }
   }, []);
 
-  // Close modal on Escape key
+  // Modal accessibility: body scroll lock, Escape key, and Focus Trap
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isModalOpen) {
-        setIsModalOpen(false);
+    if (!isModalOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    // Pause Lenis smooth scrolling so modal can scroll natively
+    if (typeof (window as any).lenis?.stop === "function") {
+      (window as any).lenis.stop();
+    }
+
+    const modalEl = modalRef.current;
+    if (modalEl) {
+      // Focus first input or button in modal
+      const focusable = modalEl.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length > 0) {
+        focusable[0].focus();
+      }
+
+      // Trap Tab key inside dialog
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          handleCloseModal();
+          return;
+        }
+
+        if (e.key === "Tab") {
+          const focusableElements = modalEl.querySelectorAll<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusableElements.length === 0) return;
+          const first = focusableElements[0];
+          const last = focusableElements[focusableElements.length - 1];
+
+          if (e.shiftKey) {
+            if (document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            }
+          } else {
+            if (document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
+          }
+        }
+      };
+
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        window.removeEventListener("keydown", handleKeyDown);
+        if (typeof (window as any).lenis?.start === "function") {
+          (window as any).lenis.start();
+        }
+      };
+    }
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      if (typeof (window as any).lenis?.start === "function") {
+        (window as any).lenis.start();
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isModalOpen]);
 
-  // Overall statistics
+  // Overall statistics from public verified reviews
   const stats = useMemo(() => {
     const total = reviews.length;
     const average = total > 0 ? (reviews.reduce((acc, r) => acc + (r.rating || 5), 0) / total).toFixed(1) : "5.0";
@@ -284,195 +754,13 @@ export function Reviews() {
     return { total, average, fiveStarPercent };
   }, [reviews]);
 
-  // Filtered reviews
-  const filteredReviews = useMemo(() => {
-    return reviews.filter((r) => {
-      // Filter tab
-      if (activeFilter === "5star" && (r.rating || 5) !== 5) return false;
-      if (activeFilter === "family" && !r.tripType?.toLowerCase().includes("family")) return false;
-      if (activeFilter === "couple" && !r.tripType?.toLowerCase().includes("couple")) return false;
-      if (activeFilter === "my_reviews" && !r.isUserSubmitted) return false;
 
-      // Search query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesAuthor = r.author.toLowerCase().includes(q);
-        const matchesLocation = r.location.toLowerCase().includes(q);
-        const matchesQuote = r.quote.toLowerCase().includes(q);
-        const matchesTitle = r.title?.toLowerCase().includes(q);
-        const matchesHighlights = r.highlights?.some((h) => h.toLowerCase().includes(q));
-        if (!matchesAuthor && !matchesLocation && !matchesQuote && !matchesTitle && !matchesHighlights) {
-          return false;
-        }
-      }
 
-      return true;
-    });
-  }, [reviews, activeFilter, searchQuery]);
-
-  const toggleHighlight = (item: string) => {
-    if (selectedHighlights.includes(item)) {
-      setSelectedHighlights(selectedHighlights.filter((h) => h !== item));
+  const toggleTag = (tag: string) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter((t) => t !== tag));
     } else {
-      setSelectedHighlights([...selectedHighlights, item]);
-    }
-  };
-
-  const handleRatingHover = (val: number) => {
-    setHoverRating(val);
-  };
-
-  const handleRatingLeave = () => {
-    setHoverRating(0);
-  };
-
-  const validate = () => {
-    const newErrors: { author?: string; quote?: string } = {};
-    if (!author.trim()) {
-      newErrors.author = "Please enter your name or group name";
-    }
-    if (!quote.trim()) {
-      newErrors.quote = "Please share a few words about your stay";
-    } else if (quote.trim().length < 15) {
-      newErrors.quote = "Please write at least 15 characters";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-    setShowSuccessToast(false);
-    if (!stayDate) {
-      setStayDate(new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }));
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-
-    const formattedDate = stayDate.trim() 
-      ? stayDate.trim() 
-      : new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
-
-    const newId = `user-${Date.now()}`;
-    const newReview: Testimonial = {
-      id: newId,
-      author: author.trim(),
-      location: location.trim() || "Visitor",
-      stayDate: formattedDate,
-      rating,
-      tripType,
-      title: title.trim() || undefined,
-      quote: quote.trim(),
-      highlights: selectedHighlights.length > 0 ? selectedHighlights : undefined,
-      helpfulCount: 1,
-      isUserSubmitted: true,
-      avatarColor,
-    };
-
-    // Update state and localStorage
-    try {
-      const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-      const existingUserReviews: Testimonial[] = stored ? JSON.parse(stored) : [];
-      const updatedUserReviews = [newReview, ...existingUserReviews];
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedUserReviews));
-      setReviews([newReview, ...reviews]);
-    } catch {
-      setReviews([newReview, ...reviews]);
-    }
-
-    // Trigger Festive Confetti
-    fireConfetti();
-
-    // Mark as newly created for visual highlight
-    setNewlyCreatedId(newId);
-
-    // Optional WhatsApp direct notification to host
-    if (sendToWhatsApp) {
-      const starsText = "★".repeat(rating) + "☆".repeat(5 - rating);
-      const highlightsText = selectedHighlights.length > 0 ? `\nHighlights: ${selectedHighlights.join(", ")}` : "";
-      const headlineText = title.trim() ? `\nTitle: "${title.trim()}"` : "";
-
-      const message = `*New Guest Review for Nalaka Rest:*\n\n` +
-        `Rating: ${starsText} (${rating}/5)\n` +
-        `Guest: ${newReview.author}\n` +
-        `Home: ${newReview.location}\n` +
-        `Trip: ${tripType}\n` +
-        `Stayed: ${newReview.stayDate}` +
-        headlineText + `\n\n` +
-        `"${newReview.quote}"` +
-        highlightsText;
-
-      const whatsappUrl = `https://wa.me/${HOST_WHATSAPP}?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-    }
-
-    // Reset Form
-    setAuthor("");
-    setLocation("");
-    setStayDate("");
-    setTitle("");
-    setQuote("");
-    setRating(5);
-    setSelectedHighlights(["24/7 Hot Water", "Tea Estate Views"]);
-    setErrors({});
-    setIsModalOpen(false);
-    setShowSuccessToast(true);
-
-    // Reset filter to see all reviews including the newly published one
-    setActiveFilter("all");
-
-    // Scroll to the reviews section smoothly
-    setTimeout(() => {
-      const element = document.getElementById("notes");
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
-      }
-    }, 150);
-
-    // Auto dismiss toast after 8 seconds
-    setTimeout(() => {
-      setShowSuccessToast(false);
-    }, 8000);
-  };
-
-  const handleHelpfulVote = (id: string | number) => {
-    const stringId = String(id);
-    if (upvotedIds.includes(stringId)) return; // Already voted
-
-    const newUpvoted = [...upvotedIds, stringId];
-    setUpvotedIds(newUpvoted);
-    try {
-      localStorage.setItem(HELPFUL_STORAGE_KEY, JSON.stringify(newUpvoted));
-    } catch {
-      // Ignore
-    }
-
-    setReviews((prev) =>
-      prev.map((r) => {
-        if (r.id === id) {
-          return { ...r, helpfulCount: (r.helpfulCount || 0) + 1 };
-        }
-        return r;
-      })
-    );
-  };
-
-  const handleDeleteUserReview = (id: string | number) => {
-    if (!window.confirm("Are you sure you want to delete your review?")) return;
-    const updated = reviews.filter((r) => r.id !== id);
-    setReviews(updated);
-    try {
-      const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (stored) {
-        const parsed: Testimonial[] = JSON.parse(stored);
-        const filtered = parsed.filter((r) => r.id !== id);
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(filtered));
-      }
-    } catch {
-      // Ignore
+      setSelectedTags([...selectedTags, tag]);
     }
   };
 
@@ -493,7 +781,6 @@ export function Reviews() {
     }
   };
 
-  // Helper to generate 2-letter initials
   const getInitials = (name: string) => {
     const parts = name.trim().split(" ");
     if (parts.length >= 2) {
@@ -502,693 +789,970 @@ export function Reviews() {
     return (name[0] || "V").toUpperCase();
   };
 
+  // Open modal handler (records trigger element for focus return, accepts prefilled rating)
+  const handleOpenModal = (prefilledRating = 0) => {
+    triggerSourceRef.current = document.activeElement as HTMLElement;
+    setRating(prefilledRating);
+    setHoverRating(0);
+    setAuthor("");
+    setLocation("");
+    setStayDate(getCurrentYearMonth());
+    setTripType("");
+    setTitle("");
+    setQuote("");
+    setSelectedTags([]);
+    setContact("");
+    setHoneypot("");
+    setErrors({});
+    setIsSubmitted(false);
+    setIsSubmitting(false);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setIsSubmitted(false);
+    setIsSubmitting(false);
+    setErrors({});
+    setTimeout(() => {
+      triggerSourceRef.current?.focus();
+    }, 50);
+  };
+
+  const validate = () => {
+    const newErrors: { rating?: string; author?: string; quote?: string; summary?: string } = {};
+    let firstInvalidEl: HTMLElement | null = null;
+
+    if (!rating || rating === 0) {
+      newErrors.rating = "Please select a star rating (1 to 5 stars)";
+      if (!firstInvalidEl) firstInvalidEl = ratingCardRef.current;
+    }
+    if (!author.trim()) {
+      newErrors.author = "Please enter your name or group name";
+      if (!firstInvalidEl) firstInvalidEl = authorInputRef.current;
+    }
+    if (!quote.trim()) {
+      newErrors.quote = "Please share a few words about your stay";
+      if (!firstInvalidEl) firstInvalidEl = quoteInputRef.current;
+    } else if (quote.trim().length < 15) {
+      newErrors.quote = `Please write at least 15 characters (currently ${quote.trim().length})`;
+      if (!firstInvalidEl) firstInvalidEl = quoteInputRef.current;
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      newErrors.summary = "Please complete the required fields highlighted above.";
+      setErrors(newErrors);
+      if (firstInvalidEl) {
+        firstInvalidEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        if (typeof firstInvalidEl.focus === "function") {
+          firstInvalidEl.focus();
+        }
+      }
+      return false;
+    }
+
+    setErrors({});
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    // Spam honeypot check
+    if (honeypot) {
+      setIsSubmitting(true);
+      setTimeout(() => {
+        setIsSubmitting(false);
+        setIsSubmitted(true);
+        setShowThankYouBanner(true);
+      }, 300);
+      return;
+    }
+
+    // Rate limiting: 30 seconds minimum between submissions
+    const lastSubmitTime = localStorage.getItem(RATE_LIMIT_KEY);
+    if (lastSubmitTime && Date.now() - parseInt(lastSubmitTime, 10) < 30000) {
+      setErrors((prev) => ({
+        ...prev,
+        quote: "Please wait 30 seconds before submitting another note.",
+        summary: "Please wait 30 seconds before submitting another note.",
+      }));
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const formattedDate = formatYearMonthToText(stayDate) || "Recent Stay";
+    const pendingReview: Testimonial = {
+      id: `pending-${Date.now()}`,
+      author: author.trim(),
+      location: location.trim() || "Visitor",
+      stayDate: formattedDate,
+      rating,
+      tripType: tripType || undefined,
+      title: title.trim() || undefined,
+      quote: quote.trim(),
+      highlights: selectedTags.length > 0 ? selectedTags : undefined,
+      contact: contact.trim() || undefined,
+      status: "pending",
+      createdAt: new Date().toISOString(),
+      avatarColor,
+    };
+
+    // Save with status: "pending" (not shown publicly until approved)
+    try {
+      const stored = localStorage.getItem(LOCAL_STORAGE_PENDING_KEY);
+      const pendingList: Testimonial[] = stored ? JSON.parse(stored) : [];
+      localStorage.setItem(
+        LOCAL_STORAGE_PENDING_KEY,
+        JSON.stringify([pendingReview, ...pendingList])
+      );
+      localStorage.setItem(RATE_LIMIT_KEY, Date.now().toString());
+    } catch {
+      // Storage fallback
+    }
+
+    // If AUTO_PUBLISH is enabled, immediately publish to the live slider as the first card
+    if (AUTO_PUBLISH) {
+      const approvedReview: Testimonial = {
+        ...pendingReview,
+        status: "approved",
+      };
+      setReviews((prev) => [approvedReview, ...prev]);
+    }
+
+    // Optional backend dispatch if Web3Forms key is configured
+    if (WEB3FORMS_ACCESS_KEY) {
+      try {
+        await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            access_key: WEB3FORMS_ACCESS_KEY,
+            subject: `New Nalaka Rest Review (Pending Approval) - ${rating} Stars from ${pendingReview.author}`,
+            rating: `${rating} / 5 Stars`,
+            guest_name: pendingReview.author,
+            location: pendingReview.location,
+            stay_date: pendingReview.stayDate,
+            trip_type: tripType || "Not specified",
+            title: title.trim() || "None",
+            review: pendingReview.quote,
+            tags: selectedTags.join(", ") || "None",
+            contact: contact.trim() || "None",
+            status: "pending",
+          }),
+        });
+      } catch {
+        // Continue even if network error
+      }
+    }
+
+    // Optional WhatsApp direct notification link
+    let whatsappUrl: string | undefined;
+    if (sendToWhatsApp) {
+      const starsText = "★".repeat(rating) + "☆".repeat(5 - rating);
+      const tagsText = selectedTags.length > 0 ? `\nTags: ${selectedTags.join(", ")}` : "";
+      const headlineText = title.trim() ? `\nTitle: "${title.trim()}"` : "";
+      const contactText = contact.trim() ? `\nContact: ${contact.trim()}` : "";
+      const tripText = tripType ? `\nTrip: ${tripType}` : "";
+
+      const message = `*New Guest Note for Nalaka Rest (Pending Approval):*\n\n` +
+        `Rating: ${starsText} (${rating}/5)\n` +
+        `Guest: ${pendingReview.author}\n` +
+        `Home: ${pendingReview.location}` +
+        tripText +
+        `\nStayed: ${pendingReview.stayDate}` +
+        headlineText + `\n\n` +
+        `"${pendingReview.quote}"` +
+        tagsText +
+        contactText;
+
+      whatsappUrl = `https://wa.me/${HOST_WHATSAPP}?text=${encodeURIComponent(message)}`;
+    }
+
+    // Save submitted review summary for the Thank You card
+    setSubmittedReview({
+      author: pendingReview.author,
+      rating: pendingReview.rating,
+      quote: pendingReview.quote,
+      stayDate: pendingReview.stayDate,
+      location: pendingReview.location,
+      title: pendingReview.title,
+      whatsappUrl,
+    });
+
+    // Festive confetti and show success state inside modal & on page
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+      setShowThankYouBanner(true);
+      fireConfetti();
+    }, 450);
+  };
+
+  const handleHelpfulVote = (id: string | number) => {
+    const stringId = String(id);
+    if (upvotedIds.includes(stringId)) return;
+
+    const newUpvoted = [...upvotedIds, stringId];
+    setUpvotedIds(newUpvoted);
+    try {
+      localStorage.setItem(HELPFUL_STORAGE_KEY, JSON.stringify(newUpvoted));
+    } catch {
+      // Ignore
+    }
+
+    setReviews((prev) =>
+      prev.map((r) => {
+        if (r.id === id) {
+          return { ...r, helpfulCount: (r.helpfulCount || 0) + 1 };
+        }
+        return r;
+      })
+    );
+  };
+
   return (
     <section className="py-20 md:py-24 bg-[#ECE7DC] text-[#1A221E] border-b border-[#1A221E]/10 relative" id="notes">
       <div className="max-w-6xl mx-auto px-6">
         
-        {/* Section Header with Standout "Write a Review" Call to Action */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-          <div className="max-w-xl">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs uppercase tracking-widest text-[#8A5229] font-bold">
-                Guestbook &amp; Impressions
-              </span>
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-[#1E3A2B]/10 text-[#1E3A2B] px-2.5 py-0.5 rounded-full">
-                <ShieldCheck size={12} />
-                <span>Verified Visitor Notes</span>
-              </span>
-            </div>
-            <h2 className="font-['Newsreader'] text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight">
-              Stories from past visitors.
-            </h2>
-            <p className="font-['Plus_Jakarta_Sans'] text-sm md:text-base text-[#515B54] mt-2">
-              Genuine memories from travelers who stayed at our hillside retreat. Have you stayed at Nalaka Rest? We invite you to share your experience with fellow travelers!
-            </p>
-          </div>
-
-          <div className="shrink-0 flex items-center gap-3">
-            <button
-              type="button"
-              id="open-review-form-btn"
-              onClick={handleOpenModal}
-              className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-[#1E3A2B] text-[#F5F2EB] text-sm font-semibold tracking-wide hover:bg-[#15291E] hover:shadow-md hover:scale-[1.02] active:scale-95 transition-all shadow-sm group"
-            >
-              <PenLine size={16} className="text-[#D4AF37] group-hover:rotate-6 transition-transform" />
-              <span>Write a Review</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Rating Overview Summary Banner */}
-        <div className="mb-10 bg-[#F5F2EB] rounded-2xl border border-[#1A221E]/10 p-6 sm:p-7 shadow-xs">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            
-            {/* Left: Star score & Count */}
-            <div className="flex items-center gap-5 sm:gap-6">
-              <div className="flex flex-col items-center justify-center bg-[#1E3A2B] text-[#F5F2EB] w-20 h-20 sm:w-22 sm:h-22 rounded-2xl shrink-0 shadow-sm">
-                <span className="font-['Newsreader'] text-3xl sm:text-4xl font-bold tracking-tight">
-                  {stats.average}
-                </span>
-                <span className="text-[10px] tracking-wider uppercase text-[#D4AF37] font-semibold">
-                  Out of 5.0
-                </span>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-1 text-[#8A5229] mb-1">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} size={18} className="fill-[#8A5229] text-[#8A5229]" />
-                  ))}
-                  <span className="ml-1 text-xs font-bold text-[#1A221E]">
-                    Outstanding ({stats.fiveStarPercent}% 5-Star)
-                  </span>
-                </div>
-                <p className="text-xs sm:text-sm text-[#515B54]">
-                  Based on <strong className="text-[#1A221E]">{stats.total} verified guest reviews</strong>. All feedback is from genuine travelers.
-                </p>
-                <div className="flex flex-wrap items-center gap-3 mt-2 text-[11px] text-[#8A5229] font-medium">
-                  <span className="flex items-center gap-1">✓ Full Self-Catering Kitchen</span>
-                  <span className="flex items-center gap-1">✓ 24/7 Geyser Hot Water</span>
-                  <span className="flex items-center gap-1">✓ Private Hillside Compound</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Quick CTA to write review */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 border-t lg:border-t-0 lg:border-l border-[#1A221E]/10 pt-4 lg:pt-0 lg:pl-6 shrink-0">
-              <div className="text-left">
-                <p className="text-xs font-bold text-[#1A221E]">
-                  Were you a guest here?
-                </p>
-                <p className="text-[11px] text-[#515B54]">
-                  Your review helps future guests plan their highland holiday.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={handleOpenModal}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#1E3A2B] text-[#1E3A2B] text-xs font-bold hover:bg-[#1E3A2B] hover:text-[#F5F2EB] active:scale-95 transition-all whitespace-nowrap"
-              >
-                <Sparkles size={13} className="text-[#8A5229]" />
-                <span>Share Your Note</span>
-              </button>
-            </div>
-
-          </div>
-        </div>
-
-        {/* Success Alert Banner */}
-        {showSuccessToast && (
+        {/* On-Page Persistent Thank You Confirmation Banner */}
+        {showThankYouBanner && (
           <div 
             role="status"
-            className="mb-8 p-5 bg-[#1E3A2B]/10 border border-[#1E3A2B]/20 rounded-2xl flex items-start justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300 shadow-xs"
+            aria-live="polite"
+            className="mb-8 p-4 sm:p-5 rounded-2xl bg-[#1E3A2B] text-[#F5F2EB] border border-[#D4AF37]/30 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-3 duration-300"
           >
-            <div className="flex items-start gap-3">
-              <CheckCircle2 size={22} className="text-[#1E3A2B] shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#1E3A2B]">
-                  Thank you! Your review is now published.
-                </h4>
-                <p className="text-xs text-[#515B54] mt-0.5">
-                  Your note has been added to our guestbook and will help fellow mountain travelers. We are deeply grateful for your warm feedback!
+            <div className="flex items-start gap-3.5 min-w-0">
+              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] flex items-center justify-center shrink-0 mt-0.5">
+                <CheckCircle2 size={22} />
+              </div>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="font-['Newsreader'] text-lg sm:text-xl font-semibold text-[#F5F2EB]">
+                    Thank you{submittedReview?.author ? `, ${submittedReview.author}` : ""} for sharing your review!
+                  </h3>
+                  <span className="text-[10px] font-bold tracking-wide uppercase bg-[#D4AF37]/25 text-[#D4AF37] px-2.5 py-0.5 rounded-full">
+                    Submitted
+                  </span>
+                </div>
+                <p className="font-['Plus_Jakarta_Sans'] text-xs sm:text-sm text-[#F5F2EB]/80 mt-1 max-w-2xl leading-relaxed">
+                  We received your {submittedReview?.rating ? `${submittedReview.rating}-star ` : ""}note! It will appear with our verified guest stories after a quick review.
                 </p>
               </div>
             </div>
             <button
               type="button"
-              onClick={() => setShowSuccessToast(false)}
-              className="text-[#515B54] hover:text-[#1A221E] p-1 rounded-md hover:bg-[#1A221E]/5 transition-colors"
-              aria-label="Dismiss message"
+              onClick={() => setShowThankYouBanner(false)}
+              className="self-end sm:self-center px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-[#F5F2EB] text-xs font-semibold tracking-wide transition-colors shrink-0 cursor-pointer"
             >
-              <X size={16} />
+              Dismiss
             </button>
           </div>
         )}
 
-        {/* Filter Tabs & Search Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-8">
-          {/* Filter Pills */}
-          <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-            <button
-              type="button"
-              onClick={() => setActiveFilter("all")}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                activeFilter === "all"
-                  ? "bg-[#1E3A2B] text-[#F5F2EB] shadow-xs"
-                  : "bg-[#F5F2EB] text-[#515B54] hover:text-[#1A221E] border border-[#1A221E]/10"
-              }`}
-            >
-              All Notes ({reviews.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveFilter("5star")}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1 transition-all ${
-                activeFilter === "5star"
-                  ? "bg-[#1E3A2B] text-[#F5F2EB] shadow-xs"
-                  : "bg-[#F5F2EB] text-[#515B54] hover:text-[#1A221E] border border-[#1A221E]/10"
-              }`}
-            >
-              <Star size={12} className="fill-current text-[#D4AF37]" />
-              <span>5 Stars</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveFilter("family")}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                activeFilter === "family"
-                  ? "bg-[#1E3A2B] text-[#F5F2EB] shadow-xs"
-                  : "bg-[#F5F2EB] text-[#515B54] hover:text-[#1A221E] border border-[#1A221E]/10"
-              }`}
-            >
-              Families
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveFilter("couple")}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                activeFilter === "couple"
-                  ? "bg-[#1E3A2B] text-[#F5F2EB] shadow-xs"
-                  : "bg-[#F5F2EB] text-[#515B54] hover:text-[#1A221E] border border-[#1A221E]/10"
-              }`}
-            >
-              Couples
-            </button>
-            {reviews.some((r) => r.isUserSubmitted) && (
-              <button
-                type="button"
-                onClick={() => setActiveFilter("my_reviews")}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                  activeFilter === "my_reviews"
-                    ? "bg-[#1E3A2B] text-[#F5F2EB] shadow-xs"
-                    : "bg-[#F5F2EB] text-[#8A5229] hover:text-[#1A221E] border border-[#8A5229]/20"
-                }`}
-              >
-                Your Notes
-              </button>
-            )}
-          </div>
-
-          {/* Search Box */}
-          <div className="relative min-w-[220px]">
-            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#515B54]" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search notes (e.g. kitchen, view)..."
-              className="w-full pl-9 pr-8 py-1.5 text-xs rounded-full bg-[#F5F2EB] border border-[#1A221E]/15 text-[#1A221E] placeholder-[#515B54]/60 focus:outline-none focus:ring-1 focus:ring-[#1E3A2B]"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#515B54] hover:text-[#1A221E]"
-              >
-                <X size={12} />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Reviews Cards Grid */}
-        <div ref={reviewsContainerRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-          {filteredReviews.map((item) => {
-            const starCount = item.rating || 5;
-            const isNewlyCreated = item.id === newlyCreatedId;
-            const hasUpvoted = upvotedIds.includes(String(item.id));
-
-            return (
-              <div 
-                key={item.id}
-                id={`review-card-${item.id}`}
-                className={`bg-[#F5F2EB] p-6 sm:p-7 rounded-2xl border flex flex-col justify-between shadow-xs transition-all duration-300 ${
-                  isNewlyCreated 
-                    ? "ring-2 ring-[#1E3A2B] border-[#1E3A2B] bg-[#F9F7F1]" 
-                    : "border-[#1A221E]/10 hover:border-[#1A221E]/25 hover:shadow-sm"
-                }`}
-              >
-                <div>
-                  {/* Top Bar: Stars + Badge / Controls */}
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <div className="flex items-center gap-0.5 text-[#8A5229]" title={`${starCount} / 5 Stars`}>
-                      {[...Array(starCount)].map((_, i) => (
-                        <Star key={i} size={14} className="fill-[#8A5229] text-[#8A5229]" />
-                      ))}
-                    </div>
-
-                    <div className="flex items-center gap-1.5">
-                      {isNewlyCreated ? (
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#1E3A2B] bg-[#1E3A2B]/15 px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <Sparkles size={10} />
-                          <span>Just Published</span>
-                        </span>
-                      ) : item.isUserSubmitted ? (
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A5229] bg-[#8A5229]/10 px-2 py-0.5 rounded-full">
-                          Your Note
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-medium text-[#515B54] bg-[#1A221E]/5 px-2 py-0.5 rounded-full">
-                          Verified Guest
-                        </span>
-                      )}
-
-                      {item.isUserSubmitted && (
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteUserReview(item.id)}
-                          title="Remove your note"
-                          className="text-[#515B54]/60 hover:text-red-700 p-1 transition-colors"
-                          aria-label="Remove review"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Optional Review Title */}
-                  {item.title && (
-                    <h4 className="font-['Newsreader'] text-base sm:text-lg font-medium text-[#1A221E] mb-2 leading-snug">
-                      {item.title}
-                    </h4>
-                  )}
-
-                  {/* Review Text */}
-                  <p className="font-['Newsreader'] italic text-sm sm:text-base text-[#1A221E]/90 leading-relaxed mb-4">
-                    &ldquo;{item.quote}&rdquo;
-                  </p>
-
-                  {/* Highlights tags if provided */}
-                  {item.highlights && item.highlights.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mb-4">
-                      {item.highlights.map((h, i) => (
-                        <span 
-                          key={i} 
-                          className="text-[10px] font-medium bg-[#1A221E]/5 text-[#515B54] px-2 py-0.5 rounded-md"
-                        >
-                          • {h}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Bottom Footer: Author Info & Helpful upvote */}
-                <div className="pt-4 border-t border-[#1A221E]/10 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    {/* Initials Avatar */}
-                    <div 
-                      className="w-8 h-8 rounded-full text-white text-[11px] font-bold flex items-center justify-center shrink-0 shadow-xs"
-                      style={{ backgroundColor: item.avatarColor || "#1E3A2B" }}
-                    >
-                      {getInitials(item.author)}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-['Plus_Jakarta_Sans'] text-xs font-bold text-[#1A221E] truncate">
-                        {item.author}
-                      </p>
-                      <p className="text-[11px] text-[#515B54] truncate">
-                        {item.location} • <span className="text-[#8A5229] font-medium">{item.stayDate}</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Helpful Button */}
-                  <button
-                    type="button"
-                    onClick={() => handleHelpfulVote(item.id)}
-                    disabled={hasUpvoted}
-                    title={hasUpvoted ? "You found this helpful" : "Mark as helpful"}
-                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${
-                      hasUpvoted 
-                        ? "bg-[#1E3A2B]/10 text-[#1E3A2B] cursor-default font-bold" 
-                        : "text-[#515B54] hover:text-[#1A221E] hover:bg-[#1A221E]/5 active:scale-95"
-                    }`}
-                  >
-                    <ThumbsUp size={11} className={hasUpvoted ? "fill-current" : ""} />
-                    <span>{item.helpfulCount || 0}</span>
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Interactive "Write a Review" Card inside the Grid */}
-          <div 
-            onClick={handleOpenModal}
-            className="group bg-[#F5F2EB]/50 hover:bg-[#F5F2EB] p-7 rounded-2xl border-2 border-dashed border-[#1A221E]/20 hover:border-[#1E3A2B] flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 min-h-[220px]"
-          >
-            <div className="w-12 h-12 rounded-full bg-[#1E3A2B]/10 group-hover:bg-[#1E3A2B] text-[#1E3A2B] group-hover:text-[#F5F2EB] flex items-center justify-center mb-3 transition-colors duration-300">
-              <PenLine size={20} />
-            </div>
-            <h4 className="font-['Newsreader'] text-xl font-medium text-[#1A221E] group-hover:text-[#1E3A2B] transition-colors">
-              Add Your Own Experience
-            </h4>
-            <p className="font-['Plus_Jakarta_Sans'] text-xs text-[#515B54] mt-1 max-w-xs">
-              Did you stay at Nalaka Rest? Leave your advice and rating for the next travelers.
-            </p>
-            <span className="inline-flex items-center gap-1.5 mt-4 text-xs font-bold text-[#1E3A2B] underline decoration-[#1E3A2B]/30 group-hover:decoration-[#1E3A2B]">
-              <span>Write a Note Now</span>
-              <span>&rarr;</span>
+        {/* Section Header (Old top "Write a Review" button removed) */}
+        <div className="max-w-2xl mb-10">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs uppercase tracking-widest text-[#8A5229] font-bold">
+              Guestbook &amp; Impressions
+            </span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-[#1E3A2B]/10 text-[#1E3A2B] px-2.5 py-0.5 rounded-full">
+              <ShieldCheck size={12} />
+              <span>Verified Visitor Notes</span>
             </span>
           </div>
-
+          <h2 className="font-['Newsreader'] text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight">
+            Stories from past visitors.
+          </h2>
+          <p className="font-['Plus_Jakarta_Sans'] text-sm md:text-base text-[#515B54] mt-2">
+            Genuine memories from travelers who stayed at our hillside retreat. Have you stayed at Nalaka Rest? We invite you to share your experience with fellow travelers!
+          </p>
         </div>
 
-        {/* Empty state if search has no results */}
-        {filteredReviews.length === 0 && (
+        {/* Rating Overview Summary Banner (Old "Share Your Note" CTA block removed; content cleanly fills space) */}
+        <div className="mb-10 bg-[#F5F2EB] rounded-2xl border border-[#1A221E]/10 p-6 sm:p-7 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-6">
+            
+            {/* 5.0 Rating Score Block */}
+            <div className="flex flex-col items-center justify-center bg-[#1E3A2B] text-[#F5F2EB] w-20 h-20 sm:w-22 sm:h-22 rounded-2xl shrink-0 shadow-sm">
+              <span className="font-['Newsreader'] text-3xl sm:text-4xl font-bold tracking-tight">
+                {stats.average}
+              </span>
+              <span className="text-[10px] tracking-wider uppercase text-[#D4AF37] font-semibold">
+                Out of 5.0
+              </span>
+            </div>
+
+            {/* Stars, counts and verified amenities */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1 text-[#8A5229] mb-1">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star key={s} size={18} className="fill-[#8A5229] text-[#8A5229]" />
+                ))}
+                <span className="ml-1 text-xs font-bold text-[#1A221E]">
+                  Outstanding ({stats.fiveStarPercent}% 5-Star)
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-[#515B54]">
+                Based on <strong className="text-[#1A221E]">{stats.total} verified guest reviews</strong>. All feedback is from genuine travelers.
+              </p>
+              <div className="flex flex-wrap items-center gap-3 mt-2 text-[11px] text-[#8A5229] font-medium">
+                <span className="flex items-center gap-1">✓ Full Self-Catering Kitchen</span>
+                <span className="flex items-center gap-1">✓ 24/7 Geyser Hot Water</span>
+                <span className="flex items-center gap-1">✓ Private Hillside Compound</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Reviews Presentation:
+            - If 0 cards: empty state
+            - If <= 3 cards: static and centered
+            - If > 3 cards: single-row continuously auto-sliding marquee carousel */}
+        {reviews.length === 0 ? (
           <div className="text-center py-12 bg-[#F5F2EB] rounded-2xl border border-[#1A221E]/10 p-8 my-4">
             <MessageSquareQuote size={36} className="mx-auto text-[#515B54]/40 mb-3" />
             <h4 className="font-['Newsreader'] text-xl font-medium text-[#1A221E]">
-              No guest notes found
+              No guest notes yet
             </h4>
             <p className="text-xs text-[#515B54] mt-1">
-              No reviews matched your current search or filter. Try a different keyword or reset filters.
+              Be the first to leave a verified note about your stay at Nalaka Rest.
             </p>
+          </div>
+        ) : reviews.length <= 3 ? (
+          <div className="flex flex-wrap items-stretch justify-center gap-5 py-3">
+            {reviews.map((item) => (
+              <ReviewCardItem
+                key={item.id}
+                item={item}
+                hasUpvoted={upvotedIds.includes(String(item.id))}
+                onUpvote={handleHelpfulVote}
+                getInitials={getInitials}
+              />
+            ))}
+          </div>
+        ) : (
+          <AutoSlidingReviewsCarousel
+            items={reviews}
+            upvotedIds={upvotedIds}
+            onUpvote={handleHelpfulVote}
+            getInitials={getInitials}
+          />
+        )}
+
+        {/* ================================================================= */}
+        {/* Full-width "Write a Review" Teaser Section (Centered & Fitted) */}
+        {/* ================================================================= */}
+        <div className="mt-12 bg-[#F5F2EB] rounded-2xl border border-[#1A221E]/10 p-8 sm:p-10 shadow-xs text-center flex flex-col items-center">
+          
+          {/* Centered Pen Icon Badge */}
+          <div className="w-12 h-12 rounded-full bg-[#1E3A2B]/10 text-[#1E3A2B] flex items-center justify-center mb-4 shadow-xs">
+            <PenLine size={22} />
+          </div>
+
+          {/* Centered Heading & Subtitle */}
+          <div className="max-w-xl mx-auto mb-4">
+            <h3 className="font-['Newsreader'] text-2xl sm:text-3xl font-medium text-[#1A221E] leading-snug">
+              Add Your Own Experience
+            </h3>
+            <p className="font-['Plus_Jakarta_Sans'] text-xs sm:text-sm text-[#515B54] mt-1.5 leading-relaxed">
+              Did you stay at Nalaka Rest? Leave your advice and rating for the next travelers.
+            </p>
+          </div>
+
+          {/* Centered 5 Interactive Outline/Filled Stars */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mb-6">
+            <div 
+              className="flex items-center gap-1.5"
+              onMouseLeave={() => setTeaserHoverRating(0)}
+              aria-label="Star rating trigger"
+            >
+              {[1, 2, 3, 4, 5].map((starVal) => {
+                const isHovered = teaserHoverRating >= starVal;
+                return (
+                  <button
+                    key={starVal}
+                    type="button"
+                    onClick={() => handleOpenModal(starVal)}
+                    onMouseEnter={() => setTeaserHoverRating(starVal)}
+                    className="p-1 text-[#8A5229] hover:scale-125 active:scale-95 transition-transform focus:outline-none focus-visible:ring-1 focus-visible:ring-[#1E3A2B] rounded cursor-pointer"
+                    aria-label={`Rate ${starVal} star${starVal > 1 ? "s" : ""} and review`}
+                  >
+                    <Star
+                      size={24}
+                      className={`transition-colors ${
+                        isHovered ? "fill-[#8A5229] text-[#8A5229]" : "text-[#1A221E]/25 hover:text-[#8A5229]"
+                      }`}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+            <span className="text-xs text-[#515B54] font-medium select-none sm:ml-1">
+              {teaserHoverRating > 0 ? getRatingLabel(teaserHoverRating) : "(tap to rate)"}
+            </span>
+          </div>
+
+          {/* Centered "Write a Review" Button */}
+          <div>
             <button
               type="button"
-              onClick={() => {
-                setActiveFilter("all");
-                setSearchQuery("");
-              }}
-              className="mt-4 px-4 py-2 rounded-full bg-[#1E3A2B] text-[#F5F2EB] text-xs font-semibold"
+              onClick={() => handleOpenModal(0)}
+              className="inline-flex items-center justify-center gap-2.5 px-8 py-3 rounded-full bg-[#1E3A2B] text-[#F5F2EB] text-xs sm:text-sm font-semibold tracking-wide hover:bg-[#15291E] hover:shadow-md hover:scale-[1.02] active:scale-95 transition-all shadow-sm group cursor-pointer"
             >
-              Show All Notes
+              <PenLine size={16} className="text-[#D4AF37] group-hover:rotate-6 transition-transform" />
+              <span>Write a Review &rarr;</span>
             </button>
           </div>
-        )}
+
+        </div>
 
       </div>
 
-      {/* ======================================================== */}
-      {/* Interactive "Write a Review" Modal Dialog                */}
-      {/* ======================================================== */}
+      {/* ================================================================= */}
+      {/* Review Modal Dialog (Accessible Popup with Fixed Defaults)       */}
+      {/* ================================================================= */}
       {isModalOpen && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+          data-lenis-prevent="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
           role="dialog"
           aria-modal="true"
           aria-labelledby="write-review-title"
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              handleCloseModal();
+            }
+          }}
         >
           {/* Modal Container */}
           <div 
             ref={modalRef}
-            className="relative w-full max-w-2xl bg-[#F5F2EB] rounded-2xl border border-[#1A221E]/15 shadow-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto text-[#1A221E] animate-in zoom-in-95 duration-200"
+            data-lenis-prevent="true"
+            className="relative w-full max-w-[720px] bg-[#F5F2EB] rounded-2xl border border-[#1A221E]/15 shadow-2xl max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden text-[#1A221E] animate-in zoom-in-95 duration-200"
           >
-            {/* Header */}
-            <div className="flex items-start justify-between pb-4 mb-5 border-b border-[#1A221E]/10">
+            {/* Header: Fixed top */}
+            <div className="shrink-0 flex items-start justify-between p-5 sm:p-6 pb-4 border-b border-[#1A221E]/10 bg-[#F5F2EB]">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#8A5229]">
-                  Guest Book Entry
+                  {isSubmitted ? "Submission Received" : "Guest Book Entry"}
                 </span>
                 <h3 id="write-review-title" className="font-['Newsreader'] text-2xl sm:text-3xl font-medium text-[#1A221E] mt-0.5">
-                  Share Your Stay Experience
+                  {isSubmitted ? "Thank You for Your Feedback!" : "Share Your Stay Experience"}
                 </h3>
                 <p className="text-xs text-[#515B54] mt-1">
-                  Tell future travelers about your time in the Nuwara Eliya hills.
+                  {isSubmitted 
+                    ? "Your note has been received and will appear after quick approval."
+                    : "Tell future travelers about your time in the Nuwara Eliya hills."}
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="w-9 h-9 rounded-full bg-[#ECE7DC] hover:bg-[#1A221E]/10 flex items-center justify-center text-[#515B54] hover:text-[#1A221E] transition-colors shrink-0"
-                aria-label="Close"
+                onClick={handleCloseModal}
+                className="w-9 h-9 rounded-full bg-[#ECE7DC] hover:bg-[#1A221E]/10 flex items-center justify-center text-[#515B54] hover:text-[#1A221E] transition-colors shrink-0 cursor-pointer"
+                aria-label="Close review dialog"
               >
                 <X size={18} />
               </button>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} noValidate>
-              
-              {/* Star Rating Selection */}
-              <div className="mb-6 p-4 rounded-xl bg-[#ECE7DC]/80 border border-[#1A221E]/10">
-                <span className="block text-xs font-bold text-[#1A221E] uppercase tracking-wider mb-2">
-                  Overall Rating <span className="text-red-700">*</span>
-                </span>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                  <div 
-                    className="flex items-center gap-1.5"
-                    onMouseLeave={handleRatingLeave}
-                    role="radiogroup"
-                    aria-label="Star Rating"
-                  >
-                    {[1, 2, 3, 4, 5].map((starVal) => {
-                      const isActive = (hoverRating || rating) >= starVal;
+            {/* Success State inside the Modal */}
+            {isSubmitted ? (
+              <div 
+                data-lenis-prevent="true"
+                className="flex-1 overflow-y-auto overscroll-contain p-6 sm:p-8"
+                style={{ WebkitOverflowScrolling: "touch" }}
+              >
+                <div className="py-4 px-1 sm:px-4 text-center space-y-5 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="relative inline-flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full bg-[#1E3A2B] text-[#D4AF37] flex items-center justify-center shadow-lg ring-8 ring-[#1E3A2B]/10">
+                      <CheckCircle2 size={36} className="text-[#F5F2EB]" />
+                    </div>
+                    <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-[#D4AF37] text-[#1E3A2B] flex items-center justify-center shadow-xs">
+                      <Sparkles size={14} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-['Newsreader'] text-2xl sm:text-3xl font-medium text-[#1A221E]">
+                      Thank You, {submittedReview?.author || "Guest"}!
+                    </h4>
+                    <p className="font-['Plus_Jakarta_Sans'] text-xs sm:text-sm text-[#515B54] max-w-md mx-auto leading-relaxed mt-1.5">
+                      We are truly grateful for taking the time to share your memories at Nalaka Rest. Your feedback helps fellow travelers and means the world to our family.
+                    </p>
+                  </div>
+
+                  {/* Submitted Review Summary Preview */}
+                  {submittedReview && (
+                    <div className="max-w-md mx-auto p-4 sm:p-5 rounded-2xl bg-[#ECE7DC] border border-[#1A221E]/15 text-left shadow-xs space-y-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1 text-[#8A5229]">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <Star
+                              key={s}
+                              size={16}
+                              className={s <= submittedReview.rating ? "fill-[#8A5229] text-[#8A5229]" : "text-[#1A221E]/20"}
+                            />
+                          ))}
+                          <span className="ml-1 text-xs font-bold text-[#1A221E]">
+                            {submittedReview.rating}.0 / 5.0
+                          </span>
+                        </div>
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider bg-[#1E3A2B]/10 text-[#1E3A2B] px-2.5 py-0.5 rounded-full">
+                          Pending Approval
+                        </span>
+                      </div>
+
+                      {submittedReview.title && (
+                        <h5 className="font-['Newsreader'] text-base font-semibold text-[#1A221E]">
+                          &ldquo;{submittedReview.title}&rdquo;
+                        </h5>
+                      )}
+
+                      <p className="font-['Plus_Jakarta_Sans'] text-xs text-[#515B54] italic leading-relaxed line-clamp-3">
+                        &ldquo;{submittedReview.quote}&rdquo;
+                      </p>
+
+                      <div className="pt-2 border-t border-[#1A221E]/10 flex flex-wrap items-center justify-between text-[11px] text-[#515B54]">
+                        <span className="font-semibold text-[#1A221E]">{submittedReview.author}</span>
+                        <span>{submittedReview.stayDate} &bull; {submittedReview.location}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                    {submittedReview?.whatsappUrl && (
+                      <a
+                        href={submittedReview.whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-bold shadow-xs hover:shadow-md transition-all cursor-pointer"
+                      >
+                        <MessageCircle size={15} />
+                        <span>Send Copy to Host on WhatsApp</span>
+                      </a>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleCloseModal}
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-2.5 rounded-full bg-[#1E3A2B] text-[#F5F2EB] text-xs font-bold tracking-wide hover:bg-[#15291E] shadow-sm active:scale-95 transition-all cursor-pointer"
+                    >
+                      <span>Done &amp; Close</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Review Form */
+              <form onSubmit={handleSubmit} noValidate className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                
+                {/* Scrollable Form Body */}
+                <div 
+                  data-lenis-prevent="true"
+                  className="flex-1 overflow-y-auto overscroll-contain p-5 sm:p-7 space-y-5"
+                  style={{ WebkitOverflowScrolling: "touch" }}
+                >
+                
+                {/* 1. Star Rating: Starts empty (0), label shown only when selected/hovered */}
+                <div 
+                  ref={ratingCardRef}
+                  tabIndex={-1}
+                  className={`mb-5 p-4 rounded-xl transition-all ${
+                    errors.rating 
+                      ? "bg-red-50/70 border-2 border-red-500 ring-2 ring-red-200/50 shadow-xs" 
+                      : "bg-[#ECE7DC]/80 border border-[#1A221E]/10"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="block text-xs font-bold text-[#1A221E] uppercase tracking-wider">
+                      Overall Rating <span className="text-red-700">*</span>
+                    </span>
+                    {(hoverRating || rating) > 0 && (
+                      <span className="text-xs text-[#8A5229] font-bold">
+                        {getRatingLabel(hoverRating || rating)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="flex items-center gap-1.5"
+                      onMouseLeave={() => setHoverRating(0)}
+                      role="radiogroup"
+                      aria-label="Star Rating"
+                    >
+                      {[1, 2, 3, 4, 5].map((starVal) => {
+                        const isActive = (hoverRating || rating) >= starVal;
+                        return (
+                          <button
+                            key={starVal}
+                            type="button"
+                            onClick={() => {
+                              setRating(starVal);
+                              if (errors.rating) {
+                                setErrors((prev) => {
+                                  const copy = { ...prev };
+                                  delete copy.rating;
+                                  if (!copy.author && !copy.quote) delete copy.summary;
+                                  return copy;
+                                });
+                              }
+                            }}
+                            onMouseEnter={() => setHoverRating(starVal)}
+                            className="p-1.5 text-[#8A5229] hover:scale-115 active:scale-95 transition-transform focus:outline-none cursor-pointer"
+                            aria-label={`${starVal} Star${starVal > 1 ? "s" : ""}`}
+                            aria-checked={rating === starVal}
+                            role="radio"
+                          >
+                            <Star
+                              size={26}
+                              className={isActive ? "fill-[#8A5229] text-[#8A5229]" : "text-[#1A221E]/20"}
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {rating === 0 && hoverRating === 0 && (
+                      <span className="text-xs text-[#515B54]/70 italic select-none">
+                        (tap to select rating)
+                      </span>
+                    )}
+                  </div>
+                  {errors.rating && (
+                    <div className="flex items-center gap-1.5 text-xs text-red-600 mt-2.5 font-medium animate-in fade-in duration-150">
+                      <AlertCircle size={14} className="shrink-0 text-red-600" />
+                      <span>{errors.rating}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. Guest Details: Name, Home City & Country, Stay Date */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+                  
+                  {/* Name (Required) */}
+                  <div>
+                    <label 
+                      htmlFor={authorInputId}
+                      className="block text-xs font-bold text-[#1A221E] uppercase tracking-wider mb-1.5"
+                    >
+                      Your Name / Group <span className="text-red-700">*</span>
+                    </label>
+                    <input
+                      ref={authorInputRef}
+                      id={authorInputId}
+                      type="text"
+                      value={author}
+                      onChange={(e) => {
+                        setAuthor(e.target.value);
+                        if (errors.author && e.target.value.trim()) {
+                          setErrors((prev) => {
+                            const copy = { ...prev };
+                            delete copy.author;
+                            if (!copy.rating && !copy.quote) delete copy.summary;
+                            return copy;
+                          });
+                        }
+                      }}
+                      placeholder="e.g. Kasun & Anuki M."
+                      className={`w-full px-3.5 py-2.5 text-xs rounded-xl bg-[#ECE7DC] border transition-all text-[#1A221E] placeholder-[#515B54]/60 focus:outline-none ${
+                        errors.author 
+                          ? "border-2 border-red-500 bg-red-50/50 focus:ring-2 focus:ring-red-400" 
+                          : "border-[#1A221E]/15 focus:border-[#1E3A2B] focus:ring-1 focus:ring-[#1E3A2B]"
+                      }`}
+                    />
+                    {errors.author && (
+                      <div className="flex items-center gap-1.5 text-xs text-red-600 mt-1.5 font-medium animate-in fade-in duration-150">
+                        <AlertCircle size={14} className="shrink-0 text-red-600" />
+                        <span>{errors.author}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Home Location */}
+                  <div>
+                    <label 
+                      htmlFor={locationInputId}
+                      className="block text-xs font-bold text-[#1A221E] uppercase tracking-wider mb-1.5"
+                    >
+                      Home City &amp; Country
+                    </label>
+                    <input
+                      id={locationInputId}
+                      type="text"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      placeholder="e.g. Colombo, Sri Lanka"
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-[#ECE7DC] border border-[#1A221E]/15 focus:border-[#1E3A2B] text-[#1A221E] placeholder-[#515B54]/60 focus:outline-none focus:ring-1 focus:ring-[#1E3A2B] transition-colors"
+                    />
+                  </div>
+
+                  {/* Month & Year of Stay (Defaults to current month, future months blocked via max attribute) */}
+                  <div>
+                    <label 
+                      htmlFor={stayDateInputId}
+                      className="block text-xs font-bold text-[#1A221E] uppercase tracking-wider mb-1.5"
+                    >
+                      Month &amp; Year of Stay
+                    </label>
+                    <input
+                      id={stayDateInputId}
+                      type="month"
+                      max={getCurrentYearMonth()}
+                      value={stayDate}
+                      onChange={(e) => setStayDate(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-[#ECE7DC] border border-[#1A221E]/15 focus:border-[#1E3A2B] text-[#1A221E] focus:outline-none focus:ring-1 focus:ring-[#1E3A2B] transition-colors"
+                    />
+                  </div>
+
+                </div>
+
+                {/* 3. Trip Type Selector (Starts with NOTHING selected) */}
+                <div className="mb-5">
+                  <span className="block text-xs font-bold text-[#1A221E] uppercase tracking-wider mb-1.5">
+                    Trip Type <span className="text-[#515B54] font-normal normal-case">(optional)</span>
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {TRIP_TYPES.map((type) => {
+                      const isSelected = tripType === type;
                       return (
                         <button
-                          key={starVal}
+                          key={type}
                           type="button"
-                          onClick={() => setRating(starVal)}
-                          onMouseEnter={() => handleRatingHover(starVal)}
-                          className="p-1.5 text-[#8A5229] hover:scale-115 active:scale-95 transition-transform focus:outline-none"
-                          aria-label={`${starVal} Star${starVal > 1 ? "s" : ""}`}
-                          aria-checked={rating === starVal}
-                          role="radio"
+                          onClick={() => setTripType(isSelected ? "" : type)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-[#1E3A2B] text-[#F5F2EB] shadow-xs"
+                              : "bg-[#ECE7DC] text-[#515B54] hover:text-[#1A221E] border border-[#1A221E]/10"
+                          }`}
                         >
-                          <Star
-                            size={26}
-                            className={isActive ? "fill-[#8A5229] text-[#8A5229]" : "text-[#1A221E]/20"}
-                          />
+                          {type}
                         </button>
                       );
                     })}
                   </div>
-                  <span className="text-xs text-[#8A5229] font-bold">
-                    {getRatingLabel(hoverRating || rating)}
-                  </span>
                 </div>
-              </div>
 
-              {/* Guest Details (Name, Location, Stay Date) */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-                
-                {/* Author Name */}
-                <div>
+                {/* 4. Review Title (Optional) */}
+                <div className="mb-4">
                   <label 
-                    htmlFor={authorInputId}
+                    htmlFor={titleInputId}
                     className="block text-xs font-bold text-[#1A221E] uppercase tracking-wider mb-1.5"
                   >
-                    Your Name / Group <span className="text-red-700">*</span>
+                    Review Title <span className="text-[#515B54] font-normal normal-case">(optional)</span>
                   </label>
                   <input
-                    id={authorInputId}
+                    id={titleInputId}
                     type="text"
-                    value={author}
-                    onChange={(e) => {
-                      setAuthor(e.target.value);
-                      if (errors.author) setErrors((prev) => ({ ...prev, author: undefined }));
-                    }}
-                    placeholder="e.g. Kasun & Anuki M."
-                    className={`w-full px-3.5 py-2.5 text-xs rounded-xl bg-[#ECE7DC] border ${
-                      errors.author ? "border-red-600 focus:ring-red-600" : "border-[#1A221E]/15 focus:border-[#1E3A2B]"
-                    } text-[#1A221E] placeholder-[#515B54]/60 focus:outline-none focus:ring-1 focus:ring-[#1E3A2B] transition-colors`}
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g. Unforgettable cold mountain mornings with hot tea"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-[#ECE7DC] border border-[#1A221E]/15 focus:border-[#1E3A2B] text-[#1A221E] placeholder-[#515B54]/60 focus:outline-none focus:ring-1 focus:ring-[#1E3A2B] transition-colors"
                   />
-                  {errors.author && (
-                    <p className="text-[11px] text-red-600 mt-1 font-medium">{errors.author}</p>
+                </div>
+
+                {/* 5. Review Quote Textarea (Required, min 15 chars, counter stays) */}
+                <div className="mb-5">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label 
+                      htmlFor={quoteInputId}
+                      className="block text-xs font-bold text-[#1A221E] uppercase tracking-wider"
+                    >
+                      Your Review &amp; Memories <span className="text-red-700">*</span>
+                    </label>
+                    <span className={`text-[11px] ${quote.trim().length < 15 ? "text-red-700 font-medium" : "text-[#1E3A2B] font-medium"}`}>
+                      {quote.trim().length} characters (min 15)
+                    </span>
+                  </div>
+                  <textarea
+                    ref={quoteInputRef}
+                    id={quoteInputId}
+                    rows={4}
+                    value={quote}
+                    onChange={(e) => {
+                      setQuote(e.target.value);
+                      if (errors.quote && e.target.value.trim().length >= 15) {
+                        setErrors((prev) => {
+                          const copy = { ...prev };
+                          delete copy.quote;
+                          if (!copy.rating && !copy.author) delete copy.summary;
+                          return copy;
+                        });
+                      }
+                    }}
+                    placeholder="How was your stay? How did you like the morning mountain air, the beds, the kitchen, hot water, privacy, or the host's hospitality?"
+                    className={`w-full px-4 py-3 text-xs sm:text-sm rounded-xl bg-[#ECE7DC] border transition-all text-[#1A221E] placeholder-[#515B54]/60 focus:outline-none ${
+                      errors.quote 
+                        ? "border-2 border-red-500 bg-red-50/50 focus:ring-2 focus:ring-red-400" 
+                        : "border-[#1A221E]/15 focus:border-[#1E3A2B] focus:ring-1 focus:ring-[#1E3A2B]"
+                    }`}
+                  />
+                  {errors.quote && (
+                    <div className="flex items-center gap-1.5 text-xs text-red-600 mt-1.5 font-medium animate-in fade-in duration-150">
+                      <AlertCircle size={14} className="shrink-0 text-red-600" />
+                      <span>{errors.quote}</span>
+                    </div>
                   )}
                 </div>
 
-                {/* Home Location */}
-                <div>
-                  <label 
-                    htmlFor={locationInputId}
-                    className="block text-xs font-bold text-[#1A221E] uppercase tracking-wider mb-1.5"
-                  >
-                    Home City &amp; Country
-                  </label>
-                  <input
-                    id={locationInputId}
-                    type="text"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="e.g. Colombo, Sri Lanka"
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-[#ECE7DC] border border-[#1A221E]/15 focus:border-[#1E3A2B] text-[#1A221E] placeholder-[#515B54]/60 focus:outline-none focus:ring-1 focus:ring-[#1E3A2B] transition-colors"
-                  />
-                </div>
-
-                {/* Stay Date */}
-                <div>
-                  <label 
-                    htmlFor={stayDateInputId}
-                    className="block text-xs font-bold text-[#1A221E] uppercase tracking-wider mb-1.5"
-                  >
-                    Month &amp; Year of Stay
-                  </label>
-                  <input
-                    id={stayDateInputId}
-                    type="text"
-                    value={stayDate}
-                    onChange={(e) => setStayDate(e.target.value)}
-                    placeholder="e.g. October 2026"
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-[#ECE7DC] border border-[#1A221E]/15 focus:border-[#1E3A2B] text-[#1A221E] placeholder-[#515B54]/60 focus:outline-none focus:ring-1 focus:ring-[#1E3A2B] transition-colors"
-                  />
-                </div>
-
-              </div>
-
-              {/* Trip Type Selector */}
-              <div className="mb-5">
-                <span className="block text-xs font-bold text-[#1A221E] uppercase tracking-wider mb-1.5">
-                  Trip Type
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {TRIP_TYPES.map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => setTripType(type)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                        tripType === type
-                          ? "bg-[#1E3A2B] text-[#F5F2EB] shadow-xs"
-                          : "bg-[#ECE7DC] text-[#515B54] hover:text-[#1A221E] border border-[#1A221E]/10"
-                      }`}
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Review Headline / Title */}
-              <div className="mb-4">
-                <label 
-                  htmlFor={titleInputId}
-                  className="block text-xs font-bold text-[#1A221E] uppercase tracking-wider mb-1.5"
-                >
-                  Review Title <span className="text-[#515B54] font-normal normal-case">(optional)</span>
-                </label>
-                <input
-                  id={titleInputId}
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Unforgettable cold mountain mornings with hot tea"
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-[#ECE7DC] border border-[#1A221E]/15 focus:border-[#1E3A2B] text-[#1A221E] placeholder-[#515B54]/60 focus:outline-none focus:ring-1 focus:ring-[#1E3A2B] transition-colors"
-                />
-              </div>
-
-              {/* Review Quote Textarea */}
-              <div className="mb-5">
-                <div className="flex items-center justify-between mb-1.5">
-                  <label 
-                    htmlFor={quoteInputId}
-                    className="block text-xs font-bold text-[#1A221E] uppercase tracking-wider"
-                  >
-                    Your Review &amp; Memories <span className="text-red-700">*</span>
-                  </label>
-                  <span className="text-[11px] text-[#515B54]">
-                    {quote.length} characters (min 15)
+                {/* 6. Optional Tag Chips */}
+                <div className="mb-5">
+                  <span className="block text-xs font-bold text-[#1A221E] uppercase tracking-wider mb-2">
+                    Highlights &amp; Experiences <span className="text-[#515B54] font-normal normal-case">(optional, tap to select)</span>
                   </span>
+                  <div className="flex flex-wrap gap-2">
+                    {AVAILABLE_TAGS.map((tag) => {
+                      const isSelected = selectedTags.includes(tag);
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => toggleTag(tag)}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-[#1E3A2B] text-[#F5F2EB] shadow-xs"
+                              : "bg-[#ECE7DC] text-[#515B54] hover:text-[#1A221E] border border-[#1A221E]/10"
+                          }`}
+                        >
+                          {isSelected && <Check size={12} />}
+                          <span>{tag}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <textarea
-                  id={quoteInputId}
-                  rows={4}
-                  value={quote}
-                  onChange={(e) => {
-                    setQuote(e.target.value);
-                    if (errors.quote) setErrors((prev) => ({ ...prev, quote: undefined }));
-                  }}
-                  placeholder="How was your stay? How did you like the morning mountain air, the beds, the kitchen, hot water, privacy, or the host's hospitality?"
-                  className={`w-full px-4 py-3 text-xs sm:text-sm rounded-xl bg-[#ECE7DC] border ${
-                    errors.quote ? "border-red-600 focus:ring-red-600" : "border-[#1A221E]/15 focus:border-[#1E3A2B]"
-                  } text-[#1A221E] placeholder-[#515B54]/60 focus:outline-none focus:ring-1 focus:ring-[#1E3A2B] transition-colors`}
-                />
-                {errors.quote && (
-                  <p className="text-[11px] text-red-600 mt-1 font-medium">{errors.quote}</p>
-                )}
-              </div>
 
-              {/* Highlights tags */}
-              <div className="mb-5">
-                <span className="block text-xs font-bold text-[#1A221E] uppercase tracking-wider mb-2">
-                  What did you like most? <span className="text-[#515B54] font-normal normal-case">(tap to select)</span>
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {AVAILABLE_HIGHLIGHTS.map((tag) => {
-                    const isSelected = selectedHighlights.includes(tag);
-                    return (
+                {/* 7. Optional Email or Phone Field */}
+                <div className="mb-5">
+                  <label 
+                    htmlFor={contactInputId}
+                    className="block text-xs font-bold text-[#1A221E] uppercase tracking-wider mb-1"
+                  >
+                    Email or Phone Number <span className="text-[#515B54] font-normal normal-case">(optional)</span>
+                  </label>
+                  <input
+                    id={contactInputId}
+                    type="text"
+                    value={contact}
+                    onChange={(e) => setContact(e.target.value)}
+                    placeholder="e.g. your.email@example.com or +94 7X XXX XXXX"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-[#ECE7DC] border border-[#1A221E]/15 focus:border-[#1E3A2B] text-[#1A221E] placeholder-[#515B54]/60 focus:outline-none focus:ring-1 focus:ring-[#1E3A2B] transition-colors"
+                  />
+                  <p className="text-[11px] text-[#515B54] mt-1">
+                    Private, used only to verify your stay. Not shown publicly.
+                  </p>
+                </div>
+
+                {/* 8. Avatar Color Selection */}
+                <div className="mb-6 flex items-center gap-3">
+                  <span className="text-xs font-bold text-[#1A221E] uppercase tracking-wider">
+                    Avatar Tint:
+                  </span>
+                  <div className="flex items-center gap-2">
+                    {AVATAR_COLORS.map((item) => (
                       <button
-                        key={tag}
+                        key={item.color}
                         type="button"
-                        onClick={() => toggleHighlight(tag)}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                          isSelected
-                            ? "bg-[#1E3A2B] text-[#F5F2EB]"
-                            : "bg-[#ECE7DC] text-[#515B54] hover:text-[#1A221E] border border-[#1A221E]/10"
+                        onClick={() => setAvatarColor(item.color)}
+                        style={{ backgroundColor: item.color }}
+                        title={item.label}
+                        className={`w-6 h-6 rounded-full transition-transform cursor-pointer ${
+                          avatarColor === item.color ? "ring-2 ring-offset-2 ring-[#1E3A2B] scale-110" : "opacity-80 hover:opacity-100"
                         }`}
-                      >
-                        {isSelected && <Check size={12} />}
-                        <span>{tag}</span>
-                      </button>
-                    );
-                  })}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* Avatar Color Choice */}
-              <div className="mb-6 flex items-center gap-3">
-                <span className="text-xs font-bold text-[#1A221E] uppercase tracking-wider">
-                  Avatar Tint:
-                </span>
-                <div className="flex items-center gap-2">
-                  {AVATAR_COLORS.map((item) => (
+                {/* 9. WhatsApp direct notification checkbox */}
+                <div className="mb-6 p-3.5 bg-[#ECE7DC]/60 rounded-xl border border-[#1A221E]/10 flex items-start gap-3">
+                  <input
+                    id="send-to-whatsapp"
+                    type="checkbox"
+                    checked={sendToWhatsApp}
+                    onChange={(e) => setSendToWhatsApp(e.target.checked)}
+                    className="mt-0.5 rounded border-[#1A221E]/20 text-[#1E3A2B] focus:ring-[#1E3A2B] cursor-pointer"
+                  />
+                  <label htmlFor="send-to-whatsapp" className="text-xs text-[#515B54] cursor-pointer leading-relaxed">
+                    <strong className="text-[#1A221E]">Send a copy directly to the host on WhatsApp (+94 77 509 9361)</strong>. 
+                    <span className="block text-[11px] text-[#515B54] mt-0.5">
+                      Pre-formats your note with your star rating so the host can thank you personally!
+                    </span>
+                  </label>
+                </div>
+
+                {/* Hidden Honeypot Field for Spam Bots */}
+                <div className="hidden" aria-hidden="true" style={{ display: "none" }}>
+                  <label htmlFor="hp_website">Do not fill this field</label>
+                  <input
+                    id="hp_website"
+                    type="text"
+                    name="hp_website"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                </div>
+
+                </div>
+
+                {/* 10. Fixed Docked Footer Buttons: Always visible without scrolling */}
+                <div className="shrink-0 p-4 sm:p-6 pt-3 border-t border-[#1A221E]/10 bg-[#F5F2EB] shadow-[0_-8px_16px_-4px_rgba(0,0,0,0.06)]">
+                  {errors.summary && (
+                    <div className="mb-3 p-3 rounded-xl bg-red-50 border border-red-200 text-red-900 flex items-start gap-2.5 text-xs animate-in fade-in slide-in-from-bottom-2 duration-200">
+                      <AlertCircle size={16} className="text-red-600 shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-bold text-red-900">Please complete the required fields to submit:</p>
+                        <ul className="list-disc list-inside mt-1 space-y-0.5 text-red-700">
+                          {errors.rating && <li>{errors.rating}</li>}
+                          {errors.author && <li>{errors.author}</li>}
+                          {errors.quote && <li>{errors.quote}</li>}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-end gap-3">
                     <button
-                      key={item.color}
                       type="button"
-                      onClick={() => setAvatarColor(item.color)}
-                      style={{ backgroundColor: item.color }}
-                      title={item.label}
-                      className={`w-6 h-6 rounded-full transition-transform ${
-                        avatarColor === item.color ? "ring-2 ring-offset-2 ring-[#1E3A2B] scale-110" : "opacity-80 hover:opacity-100"
-                      }`}
-                    />
-                  ))}
+                      onClick={handleCloseModal}
+                      disabled={isSubmitting}
+                      className="px-5 py-2.5 rounded-full text-xs font-semibold text-[#515B54] hover:text-[#1A221E] hover:bg-[#1A221E]/5 transition-colors disabled:opacity-50 cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      id="submit-review-btn"
+                      disabled={isSubmitting}
+                      className="inline-flex items-center gap-2 px-7 py-2.5 rounded-full bg-[#1E3A2B] text-[#F5F2EB] text-xs font-bold tracking-wide hover:bg-[#15291E] hover:shadow-md active:scale-95 transition-all shadow-sm disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <span>Submitting Note...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send size={14} />
+                          <span>Submit Note</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              {/* WhatsApp direct notification checkbox */}
-              <div className="mb-6 p-3.5 bg-[#ECE7DC]/60 rounded-xl border border-[#1A221E]/10 flex items-start gap-3">
-                <input
-                  id="send-to-whatsapp"
-                  type="checkbox"
-                  checked={sendToWhatsApp}
-                  onChange={(e) => setSendToWhatsApp(e.target.checked)}
-                  className="mt-0.5 rounded border-[#1A221E]/20 text-[#1E3A2B] focus:ring-[#1E3A2B] cursor-pointer"
-                />
-                <label htmlFor="send-to-whatsapp" className="text-xs text-[#515B54] cursor-pointer leading-relaxed">
-                  <strong className="text-[#1A221E]">Send a copy directly to the host on WhatsApp (+94 77 509 9361)</strong>. 
-                  <span className="block text-[11px] text-[#515B54] mt-0.5">
-                    Pre-formats your note with your star rating so the host can thank you personally!
-                  </span>
-                </label>
-              </div>
+              </form>
+            )}
 
-              {/* Form Action Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#1A221E]/10">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 rounded-full text-xs font-semibold text-[#515B54] hover:text-[#1A221E] hover:bg-[#1A221E]/5 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  id="submit-review-btn"
-                  className="inline-flex items-center gap-2 px-7 py-2.5 rounded-full bg-[#1E3A2B] text-[#F5F2EB] text-xs font-bold tracking-wide hover:bg-[#15291E] hover:shadow-md active:scale-95 transition-all shadow-sm"
-                >
-                  <Send size={14} />
-                  <span>Publish My Review</span>
-                </button>
-              </div>
-
-            </form>
           </div>
         </div>
       )}
 
     </section>
   );
-}
+}

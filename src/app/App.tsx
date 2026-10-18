@@ -52,6 +52,7 @@ export default function App() {
       smoothWheel: true,
       wheelMultiplier: 1,
     });
+    (window as any).lenis = lenis;
 
     // Synchronize Lenis with GSAP ScrollTrigger
     lenis.on("scroll", ScrollTrigger.update);
@@ -178,6 +179,7 @@ export default function App() {
       ctx.revert();
       gsap.ticker.remove(updateLenis);
       lenis.destroy();
+      delete (window as any).lenis;
     };
   }, []);
 
