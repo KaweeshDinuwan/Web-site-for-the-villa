@@ -7,7 +7,7 @@ export function Contact() {
   const cards = [
     {
       label: "Voice Call",
-      labelColor: "text-[#8A5229]",
+      labelColor: "text-[#1A432E]",
       title: PHONE,
       description: "Direct mobile line to the villa host. Best for urgent travel updates or same-day arrival timing.",
       actionText: "Call Host Directly",
@@ -16,7 +16,7 @@ export function Contact() {
     },
     {
       label: "Fastest Response",
-      labelColor: "text-[#1E3A2B]",
+      labelColor: "text-[#1A432E]",
       title: "WhatsApp Chat",
       description: "Send a quick message anytime with your dates, guest count, or driving questions.",
       actionText: "Open WhatsApp",
@@ -26,7 +26,7 @@ export function Contact() {
     },
     {
       label: "Location",
-      labelColor: "text-[#8A5229]",
+      labelColor: "text-[#1A432E]",
       title: "Nuwara Eliya",
       description: "Set in a residential tea-country hillside, approximately 8-10 minutes drive from Nuwara Eliya Post Office.",
       actionText: "Open Google Maps",
@@ -37,15 +37,15 @@ export function Contact() {
   ];
 
   return (
-    <section className="py-14 md:py-18 bg-[#ECE7DC] text-[#1A221E] border-b border-[#1A221E]/10" id="contact">
+    <section className="py-14 md:py-18 bg-[#F4F8F5] text-[#132E20] border-b border-[#1A432E]/10" id="contact">
       <div className="max-w-6xl mx-auto px-6">
         
-        {/* Section Header (Clean statement with subtle underline, no small label) */}
-        <div className="reveal max-w-2xl mb-10 pb-5 border-b border-[#1A221E]/15">
+        {/* Section Header */}
+        <div className="reveal max-w-2xl mb-10 pb-5 border-b border-[#1A432E]/12">
           <h2 className="font-['Newsreader'] text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight">
             Finding the house &amp; getting in touch.
           </h2>
-          <p className="font-['Plus_Jakarta_Sans'] text-sm md:text-base text-[#515B54] mt-2">
+          <p className="font-['Plus_Jakarta_Sans'] text-sm md:text-base text-[#4B6354] mt-2">
             Reach the villa host directly by phone or WhatsApp for driving guidance and arrival questions.
           </p>
         </div>
@@ -56,25 +56,25 @@ export function Contact() {
             <div 
               key={card.label}
               style={{ "--stagger-i": idx } as React.CSSProperties}
-              className="reveal-item bg-[#F5F2EB] p-7 rounded-2xl border border-[#1A221E]/10 flex flex-col justify-between shadow-xs hover:border-[#1A221E]/25 transition-colors"
+              className="reveal-item bg-white p-7 rounded-2xl border border-[#1A432E]/10 flex flex-col justify-between shadow-xs hover:border-[#1A432E]/25 transition-colors"
             >
               <div>
                 <span className={`text-xs uppercase tracking-wider ${card.labelColor} font-bold block mb-2`}>
                   {card.label}
                 </span>
-                <h3 className="font-['Newsreader'] text-2xl font-medium text-[#1A221E] mb-2">
+                <h3 className="font-['Newsreader'] text-2xl font-medium text-[#132E20] mb-2">
                   {card.title}
                 </h3>
-                <p className="text-xs text-[#515B54] leading-relaxed">
+                <p className="text-xs text-[#4B6354] leading-relaxed">
                   {card.description}
                 </p>
               </div>
-              <div className="pt-6 mt-6 border-t border-[#1A221E]/10">
+              <div className="pt-6 mt-6 border-t border-[#1A432E]/10">
                 <a
                   href={card.actionHref}
                   target={card.isExternal ? "_blank" : undefined}
                   rel={card.isExternal ? "noopener noreferrer" : undefined}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1E3A2B] hover:underline"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1A432E] hover:underline"
                 >
                   {card.icon}
                   <span>{card.actionText}</span>
@@ -85,22 +85,22 @@ export function Contact() {
         </div>
 
         {/* Practical Arrival Details Card */}
-        <div className="reveal bg-[#F5F2EB] p-6 sm:p-8 rounded-2xl border border-[#1A221E]/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="reveal bg-white p-6 sm:p-8 rounded-2xl border border-[#1A432E]/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-full bg-[#1E3A2B]/10 text-[#1E3A2B] flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-10 h-10 rounded-full bg-[#1A432E]/10 text-[#1A432E] flex items-center justify-center shrink-0 mt-0.5">
               <Clock size={20} />
             </div>
             <div>
-              <h4 className="font-['Newsreader'] text-lg font-medium text-[#1A221E]">
+              <h4 className="font-['Newsreader'] text-lg font-medium text-[#132E20]">
                 Arrival &amp; Key Handover
               </h4>
-              <p className="text-xs text-[#515B54] mt-0.5 leading-relaxed max-w-xl">
+              <p className="text-xs text-[#4B6354] mt-0.5 leading-relaxed max-w-xl">
                 Check-in is from <strong>2:00 PM</strong> and check-out is by <strong>11:00 AM</strong>. Because we live close by, someone will personally meet you at the property gate to hand over keys and walk you through the house.
               </p>
             </div>
           </div>
 
-          <div className="shrink-0 flex items-center gap-2 text-xs text-[#8A5229] font-medium bg-[#ECE7DC] px-4 py-2 rounded-xl border border-[#1A221E]/10">
+          <div className="shrink-0 flex items-center gap-2 text-xs text-[#1A432E] font-medium bg-[#EBF3ED] px-4 py-2 rounded-xl border border-[#1A432E]/15">
             <MapPin size={14} />
             <span>Paved road access for all vehicles</span>
           </div>

@@ -5,7 +5,7 @@ export function Location() {
     <section className="py-24 bg-[#0a0a0a] text-[#F9F6F0]" id="location">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
-          <h4 className="text-[#D4AF37] font-['Montserrat'] tracking-widest uppercase text-sm mb-4">The Setting</h4>
+          <h4 className="text-[#A7F3D0] font-['Montserrat'] tracking-widest uppercase text-sm mb-4">The Setting</h4>
           <h2 className="text-4xl md:text-5xl font-['Playfair_Display']">Location & Surroundings</h2>
         </div>
 
@@ -29,19 +29,19 @@ export function Location() {
           {/* Location details */}
           <div className="w-full lg:w-1/3 flex flex-col gap-4">
             <div className="bg-[#121212] p-6 rounded-2xl border border-white/5 flex-1 flex flex-col justify-center">
-              <Navigation className="text-[#D4AF37] mb-4" size={28} />
+              <Navigation className="text-[#A7F3D0] mb-4" size={28} />
               <h3 className="font-['Playfair_Display'] text-2xl mb-2">Directions</h3>
               <p className="font-['Montserrat'] text-sm text-white/60 mb-4">
                 The retreat is easily accessible by taxi or ride-hailing services from the airport. Local transport options are available on arrival.
               </p>
               <div className="flex items-center gap-2 text-sm font-['Montserrat'] text-white/80">
-                <Clock size={16} className="text-[#D4AF37]" />
+                <Clock size={16} className="text-[#A7F3D0]" />
                 <span>3-4 hrs from Colombo Airport</span>
               </div>
             </div>
 
             <div className="bg-[#121212] p-6 rounded-2xl border border-white/5 flex-1">
-              <h3 className="font-['Playfair_Display'] text-xl mb-4 text-[#D4AF37]">Nearby Attractions</h3>
+              <h3 className="font-['Playfair_Display'] text-xl mb-4 text-[#A7F3D0]">Nearby Attractions</h3>
               <ul className="space-y-4">
                 {[
                   { name: "Gregory Lake", dist: "20 mins" },

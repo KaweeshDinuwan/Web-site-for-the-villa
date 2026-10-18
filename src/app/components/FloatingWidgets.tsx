@@ -10,7 +10,7 @@ export function FloatingWidgets() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Message Nalaka Rest on WhatsApp (+94 77 509 9361)"
-        className="flex items-center gap-2 bg-[#1E3A2B] text-[#F5F2EB] hover:bg-[#15291E] px-4 py-3 rounded-full shadow-md text-xs font-semibold tracking-wide transition-colors"
+        className="flex items-center gap-2 bg-[#1A432E] text-white hover:bg-[#122F20] px-4 py-3 rounded-full shadow-md text-xs font-semibold tracking-wide transition-colors"
       >
         <MessageCircle size={18} />
         <span className="hidden sm:inline">WhatsApp Host</span>

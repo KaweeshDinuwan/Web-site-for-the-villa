@@ -3,12 +3,12 @@
 @theme {
   --font-serif: 'Newsreader', Georgia, serif;
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --color-warm-bg: #F5F2EB;
-  --color-warm-card: #ECE7DC;
-  --color-warm-card-subtle: #E6E0D4;
-  --color-forest: #1E3A2B;
-  --color-forest-dark: #15291E;
-  --color-teak: #8A5229;
-  --color-ink: #1A221E;
-  --color-stone: #515B54;
+  --color-warm-bg: #FFFFFF;
+  --color-warm-card: #F4F8F5;
+  --color-warm-card-subtle: #EBF3ED;
+  --color-forest: #1A432E;
+  --color-forest-dark: #122F20;
+  --color-teak: #1A432E;
+  --color-ink: #132E20;
+  --color-stone: #4B6354;
 }

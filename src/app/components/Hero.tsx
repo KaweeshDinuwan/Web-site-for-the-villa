@@ -1,107 +1,120 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { Calendar, MessageCircle, CloudSun } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Phone, Bed, Bath, Users, Home } from "lucide-react";
+import gsap from "gsap";
 import heroImage from "./Sources/hero.jpg";
 
+const PHONE = "+94 77 509 9361";
+const HEADLINE_TEXT = "Cool nights. Warm lamps. Nuwara Eliya.";
+
 export function Hero() {
-  // Real numbers in initial HTML state so they show even if JavaScript fails
-  const [bedroomsCount, setBedroomsCount] = useState(3);
-  const [guestsCount, setGuestsCount] = useState(6);
-  const [bedsCount, setBedsCount] = useState(4);
-  const [nextFreeDates, setNextFreeDates] = useState<string | null>(null);
-  const isFirstMount = useRef(true);
+  const heroImageRef = useRef<HTMLImageElement>(null);
+  const headlineWords = HEADLINE_TEXT.split(" ");
 
-  // 1. Calculate next free dates from window.BOOKED_RANGES
+  // Existing villa stats with count-up animation
+  const [counts, setCounts] = useState({
+    bedrooms: 3,
+    beds: 4,
+    guests: 6,
+    bathrooms: 2,
+  });
+
+  // GSAP Headline Word-by-Word Reveal, Image Zoom-Out, and Elements Fade-Up
   useEffect(() => {
-    const bookedRanges = (window as unknown as { BOOKED_RANGES?: [string, string][] }).BOOKED_RANGES;
-    if (Array.isArray(bookedRanges) && bookedRanges.length > 0) {
-      const validBookings = bookedRanges
-        .map(([s, e]) => ({ start: new Date(s), end: new Date(e) }))
-        .filter((b) => !isNaN(b.start.getTime()) && !isNaN(b.end.getTime()))
-        .sort((a, b) => a.start.getTime() - b.start.getTime());
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
 
-      if (validBookings.length > 0) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        let candidate = new Date(today);
-
-        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        const formatRange = (start: Date, end: Date) => {
-          return `${start.getDate()} ${months[start.getMonth()]} – ${end.getDate()} ${months[end.getMonth()]}`;
-        };
-
-        let foundRange: string | null = null;
-        for (const b of validBookings) {
-          if (b.end <= candidate) continue;
-          if (b.start > candidate) {
-            const nights = Math.round((b.start.getTime() - candidate.getTime()) / (1000 * 60 * 60 * 24));
-            if (nights >= 2) {
-              foundRange = formatRange(candidate, b.start);
-              break;
-            }
-          }
-          if (b.end > candidate) {
-            candidate = new Date(b.end);
-          }
-        }
-
-        if (!foundRange) {
-          const freeEnd = new Date(candidate);
-          freeEnd.setDate(freeEnd.getDate() + 6);
-          foundRange = formatRange(candidate, freeEnd);
-        }
-        setNextFreeDates(foundRange);
-      }
+    // 1. Hero Image subtle slow zoom-out effect
+    if (heroImageRef.current) {
+      gsap.fromTo(
+        heroImageRef.current,
+        { scale: 1.15 },
+        { scale: 1.0, duration: 2.8, ease: "power2.out" }
+      );
     }
+
+    // 2. Headline word-by-word reveal & smooth fade-ups timeline
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+      // Eyebrow
+      tl.fromTo(
+        ".hero-eyebrow",
+        { opacity: 0, y: 16, filter: "blur(4px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6 }
+      );
+
+      // Headline reveals word-by-word with soft upward fade
+      tl.fromTo(
+        ".hero-headline-word",
+        { opacity: 0, y: 35, filter: "blur(6px)" },
+        {
+          opacity: 1,
+          y: 0,
+          filter: "blur(0px)",
+          duration: 0.75,
+          stagger: 0.08,
+        },
+        "-=0.3"
+      );
+
+      // Subtitle
+      tl.fromTo(
+        ".hero-subtitle",
+        { opacity: 0, y: 20, filter: "blur(4px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.7 },
+        "-=0.35"
+      );
+
+      // Existing buttons fade up smoothly after the headline
+      tl.fromTo(
+        ".hero-cta-buttons",
+        { opacity: 0, y: 24, filter: "blur(4px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.7 },
+        "-=0.35"
+      );
+
+      // Existing cards fade up smoothly after the buttons
+      tl.fromTo(
+        ".hero-stat-card",
+        { opacity: 0, y: 30, filter: "blur(6px)" },
+        {
+          opacity: 1,
+          y: 0,
+          filter: "blur(0px)",
+          duration: 0.75,
+          stagger: 0.09,
+        },
+        "-=0.3"
+      );
+    });
+
+    return () => ctx.revert();
   }, []);
 
-  // 2. Count-up animation function (always counts up when hero is viewed)
-  const runCountUp = useCallback(() => {
+  // Numbers count-up animation
+  useEffect(() => {
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced) {
-      setBedroomsCount(3);
-      setGuestsCount(6);
-      setBedsCount(4);
-      return;
-    }
+    if (prefersReduced) return;
 
-    setBedroomsCount(0);
-    setBedsCount(0);
-    setGuestsCount(0);
+    setCounts({ bedrooms: 0, beds: 0, guests: 0, bathrooms: 0 });
 
     const startTime = performance.now();
-    const duration = 1200; // 1.2s ease out
-    const gap = 150; // 0.15s gap between items
-
-    const targets = [
-      { target: 3, delay: 0, set: setBedroomsCount },
-      { target: 4, delay: gap, set: setBedsCount },
-      { target: 6, delay: gap * 2, set: setGuestsCount },
-    ];
+    const duration = 1200;
 
     let rafId: number;
-
     const animate = (now: number) => {
-      let allDone = true;
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeOut = 1 - Math.pow(1 - progress, 3);
 
-      targets.forEach(({ target, delay, set }) => {
-        const elapsed = now - startTime - delay;
-        if (elapsed <= 0) {
-          allDone = false;
-          return;
-        }
-        if (elapsed >= duration) {
-          set(target); // Stops EXACTLY on target (3, 4, 6)
-        } else {
-          allDone = false;
-          const progress = elapsed / duration;
-          // Cubic ease-out
-          const easeOut = 1 - Math.pow(1 - progress, 3);
-          const current = Math.min(target, Math.round(target * easeOut));
-          set(current);
-        }
+      setCounts({
+        bedrooms: Math.round(3 * easeOut),
+        beds: Math.round(4 * easeOut),
+        guests: Math.round(6 * easeOut),
+        bathrooms: Math.round(2 * easeOut),
       });
 
-      if (!allDone) {
+      if (progress < 1) {
         rafId = requestAnimationFrame(animate);
       }
     };
@@ -110,173 +123,138 @@ export function Hero() {
     return () => cancelAnimationFrame(rafId);
   }, []);
 
-  // Re-run count-up animation whenever hero comes into view
-  useEffect(() => {
-    const heroEl = document.getElementById("home");
-    if (!heroEl || typeof window === "undefined" || !("IntersectionObserver" in window)) {
-      runCountUp();
-      return;
-    }
-
-    let hasRun = false;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            if (!hasRun || !isFirstMount.current) {
-              runCountUp();
-              hasRun = true;
-            }
-          } else {
-            hasRun = false;
-            isFirstMount.current = false;
-          }
-        });
-      },
-      { threshold: 0.25 }
-    );
-
-    observer.observe(heroEl);
-    return () => observer.disconnect();
-  }, [runCountUp]);
+  const stats = [
+    {
+      value: `${counts.bedrooms}`,
+      label: "Bedrooms",
+      icon: Bed,
+    },
+    {
+      value: `${counts.beds}`,
+      label: "Beds",
+      icon: Home,
+    },
+    {
+      value: `${counts.guests} Max`,
+      label: "Guests Capacity",
+      icon: Users,
+    },
+    {
+      value: `${counts.bathrooms}`,
+      label: "Bathrooms",
+      icon: Bath,
+    },
+  ];
 
   return (
-    <section 
-      className="relative min-h-[85vh] h-[92vh] sm:h-screen w-full overflow-hidden flex flex-col justify-end sm:justify-center pt-24 pb-12 sm:pb-0" 
+    <section
       id="home"
+      className="relative min-h-[700px] h-screen w-full flex flex-col justify-between items-center text-center px-4 sm:px-6 pt-[90px] sm:pt-[100px] pb-6 sm:pb-8 overflow-hidden z-10"
     >
-      {/* Background Photo with 20s Calm Slow Zoom (100% to 106% forwards) */}
-      <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
-        <img 
+      {/* BACKGROUND: Full-bleed photo with subtle slow zoom-out effect & gradient overlay */}
+      <div className="absolute inset-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <img
+          ref={heroImageRef}
           src={heroImage}
-          alt="Nalaka Rest bungalow at twilight in Nuwara Eliya"
-          className="w-full h-full object-cover object-[75%_center] sm:object-[80%_center] md:object-[right_center] hero-photo-animate"
+          alt="Nalaka Rest villa in Nuwara Eliya at sunset"
+          fetchPriority="high"
+          decoding="async"
+          className="w-full h-full object-cover object-center scale-100 will-change-transform"
+          style={{
+            imageRendering: "-webkit-optimize-contrast",
+            backfaceVisibility: "hidden",
+            transform: "translateZ(0)",
+          }}
         />
-
-        {/* Soft Dark Gradient on Left for Text Readability (Desktop), Bottom Gradient (Mobile) */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/55 to-transparent w-full md:w-3/5 lg:w-1/2 pointer-events-none z-[1]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent sm:hidden pointer-events-none z-[1]" />
-
-        {/* 2 Soft White Mist Layers (60s and 90s slow drift, away from text) */}
-        <div className="absolute inset-0 hero-mist-1 z-[2]" />
-        <div className="absolute inset-0 hero-mist-2 z-[2]" />
-
-        {/* Gentle 4s Warm Lamp Glow Pulse */}
-        <div className="hero-lamp-glow z-[2]" />
+        {/* Exact linear gradient overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none z-[1]"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.10) 35%, rgba(0,0,0,0.10) 60%, rgba(0,0,0,0.55) 100%)",
+          }}
+        />
       </div>
 
-      {/* Floating Weather Widget */}
-      <div className="hidden sm:flex absolute top-24 right-6 z-20 bg-black/40 backdrop-blur-md border border-white/15 px-3.5 py-2 rounded-2xl items-center gap-2.5 shadow-xl text-white hero-float-always">
-        <CloudSun className="text-[#D4AF37]" size={20} />
-        <div>
-          <p className="text-xs font-bold font-['Plus_Jakarta_Sans'] leading-none">18°C</p>
-          <p className="text-[10px] text-white/75 font-['Plus_Jakarta_Sans'] leading-tight mt-0.5">Nuwara Eliya</p>
-        </div>
-      </div>
+      {/* HERO CONTENT: Centered horizontally, upper-middle (~25% to 45% from top) */}
+      <div className="relative z-10 my-auto max-w-[1200px] mx-auto w-full px-4 flex flex-col items-center pt-4 sm:pt-6">
+        {/* 1. Eyebrow */}
+        <p className="hero-eyebrow text-[10px] sm:text-[11px] text-[#E2EFE7] tracking-[0.25em] uppercase font-semibold mb-3 sm:mb-3.5 select-none font-['Plus_Jakarta_Sans']">
+          NALAKA REST · NUWARA ELIYA
+        </p>
 
-      {/* Hero Content (Left-aligned, clean plain English) */}
-      <div className="max-w-6xl mx-auto px-6 w-full text-left relative z-10">
-        
-        {/* 1. Small line: uppercase, small size, wide letter spacing, light cream color */}
-        <div className="hero-text-1 mb-4">
-          <span className="text-[#ECE7DC] font-['Plus_Jakarta_Sans'] uppercase tracking-[0.25em] text-xs font-semibold block">
-            NALAKA REST · NUWARA ELIYA
-          </span>
-        </div>
-
-        {/* 2. Main heading: keep current style & size, fits 3 lines or less on mobile */}
-        <div className="hero-text-2 mb-5">
-          <h1 className="font-['Newsreader'] text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-medium text-white leading-[1.1] tracking-tight max-w-2xl drop-shadow-md">
-            Cool nights. Warm lamps. Nuwara Eliya.
-          </h1>
-        </div>
-
-        {/* 3. Question line: lighter weight, ~40% of heading size, same Newsreader font family */}
-        <div className="hero-text-3 mb-6">
-          <p className="font-['Newsreader'] font-light text-lg sm:text-xl md:text-2xl lg:text-[28px] text-white/90 italic tracking-normal max-w-xl leading-snug">
-            Looking for a quiet place to rest?
-          </p>
-        </div>
-
-        {/* 4. Villa Details Highlight (3 Bedrooms, 4 Beds, Up to 6 Guests Capacity) */}
-        <div className="hero-text-4 mb-8">
-          <div className="inline-flex flex-wrap sm:flex-nowrap items-center bg-black/55 backdrop-blur-md border border-white/15 rounded-2xl p-3 sm:px-6 sm:py-3.5 shadow-2xl hero-float-always">
-            {/* Item 1: Bedrooms */}
-            <div className="flex items-center gap-2.5 sm:gap-3 pr-4 sm:pr-6">
-              <span className="font-['Newsreader'] text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight">
-                {bedroomsCount}
+        {/* 2. Headline: Word-by-word reveal with soft upward fade */}
+        <h1 className="text-white font-medium sm:font-semibold text-[34px] sm:text-[46px] md:text-[54px] lg:text-[62px] leading-[1.1] tracking-[-0.01em] [text-shadow:0_2px_20px_rgba(0,0,0,0.35)] max-w-4xl font-['Newsreader'] sm:font-sans">
+          {headlineWords.map((word, i) => (
+            <span key={i} className="inline-block overflow-hidden mr-[0.22em] last:mr-0">
+              <span className="hero-headline-word inline-block will-change-transform">
+                {word}
               </span>
-              <span className="text-[10px] sm:text-xs uppercase tracking-wider text-[#ECE7DC]/85 font-medium leading-tight">
-                Bedrooms
-              </span>
-            </div>
+            </span>
+          ))}
+        </h1>
 
-            {/* Vertical Divider */}
-            <div className="hidden sm:block w-px h-8 bg-white/20" />
+        {/* 3. Subtitle */}
+        <p className="hero-subtitle text-white/95 text-base sm:text-lg md:text-xl font-normal mt-3 sm:mt-3.5 max-w-[600px] mx-auto leading-relaxed font-['Newsreader'] italic sm:not-italic sm:font-['Plus_Jakarta_Sans']">
+          Looking for a quiet place to rest?
+        </p>
 
-            {/* Item 2: Beds */}
-            <div className="flex items-center gap-2.5 sm:gap-3 px-4 sm:px-6 border-l sm:border-l-0 border-white/15">
-              <span className="font-['Newsreader'] text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight">
-                {bedsCount}
-              </span>
-              <span className="text-[10px] sm:text-xs uppercase tracking-wider text-[#ECE7DC]/85 font-medium leading-tight">
-                Beds
-              </span>
-            </div>
-
-            {/* Vertical Divider */}
-            <div className="hidden sm:block w-px h-8 bg-white/20" />
-
-            {/* Item 3: Up to 6 Guests (Capacity) */}
-            <div className="flex items-center gap-2 sm:gap-2.5 pl-4 sm:pl-6 border-l sm:border-l-0 border-white/15">
-              <div className="flex items-baseline gap-1">
-                <span className="text-xs sm:text-sm text-[#ECE7DC]/85 font-normal font-['Plus_Jakarta_Sans']">
-                  Up to
-                </span>
-                <span className="font-['Newsreader'] text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight">
-                  {guestsCount}
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] sm:text-xs uppercase tracking-wider text-[#ECE7DC]/90 font-medium leading-tight">
-                  Guests
-                </span>
-                <span className="text-[9px] uppercase tracking-wider text-[#D4AF37] font-semibold leading-tight">
-                  Capacity
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Honest Next Free Dates (Only shown if data file has booked ranges) */}
-          {nextFreeDates && (
-            <p className="text-xs sm:text-[13px] text-white/85 mt-2.5 font-['Plus_Jakarta_Sans'] pl-1">
-              Next free dates: <strong className="text-white font-semibold">{nextFreeDates}</strong>
-            </p>
-          )}
-        </div>
-
-        {/* 5. Buttons: placed right under the info line */}
-        <div className="hero-text-5 flex flex-wrap items-center gap-3.5 sm:gap-4">
+        {/* 4. CTA buttons: Fade up smoothly after the headline with hover scale & shadow */}
+        <div className="hero-cta-buttons mt-7 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4 w-full sm:w-auto">
+          {/* Primary Button */}
           <a
             href="#inquire"
-            className="inline-flex items-center justify-center gap-2 bg-[#D4AF37] text-[#0a0a0a] hover:bg-[#F9F6F0] px-7 py-3.5 rounded-full font-['Plus_Jakarta_Sans'] font-bold text-xs tracking-wider uppercase transition-colors duration-250 shadow-md"
+            className="btn-hover-effect w-full max-w-[280px] sm:w-auto sm:max-w-none bg-[#1A432E] text-white text-[14px] font-medium py-3 px-[22px] rounded-[4px] hover:bg-[#122F20] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white inline-flex items-center justify-center cursor-pointer"
           >
-            <Calendar size={15} />
-            <span>Check Availability</span>
+            Check Availability
           </a>
 
+          {/* Secondary Button */}
           <a
-            href="https://wa.me/94775099361"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 border border-[#25D366]/50 text-[#25D366] bg-[#25D366]/15 hover:bg-[#25D366] hover:text-[#0a0a0a] backdrop-blur-md px-6 py-3.5 rounded-full font-['Plus_Jakarta_Sans'] font-semibold text-xs tracking-wide transition-colors duration-250"
+            href={`tel:${PHONE.replace(/\s+/g, "")}`}
+            className="btn-hover-effect w-full max-w-[280px] sm:w-auto sm:max-w-none bg-white text-[#1A432E] text-[14px] font-medium py-3 px-[22px] rounded-[4px] hover:bg-[#F4F8F5] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white inline-flex items-center justify-center gap-2 cursor-pointer"
           >
-            <MessageCircle size={15} />
-            <span>WhatsApp Host</span>
+            <Phone size={16} className="text-[#1A432E] shrink-0 stroke-[2]" aria-hidden="true" />
+            <span>Call Us Now</span>
           </a>
         </div>
+      </div>
 
+      {/* 5. STATS STRIP: Glassmorphism cards fade up smoothly with gentle hover lift */}
+      <div className="relative z-10 w-full max-w-[1200px] mx-auto px-2 sm:px-4 mt-auto">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 w-full">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="hero-stat-card card-hover-lift rounded-[12px] p-4 sm:p-5 lg:p-6 min-h-[96px] sm:min-h-[110px] shadow-sm flex flex-col justify-between text-left cursor-default"
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.12)",
+                backdropFilter: "blur(14px)",
+                WebkitBackdropFilter: "blur(14px)",
+                borderColor: "rgba(255, 255, 255, 0.18)",
+                borderWidth: "1px",
+                borderStyle: "solid",
+              }}
+            >
+              {/* Top-left: big number, white, ~32px, weight 500 */}
+              <div className="text-white text-2xl sm:text-[32px] font-medium leading-none tracking-tight">
+                {stat.value}
+              </div>
+
+              {/* Bottom row: label on left, icon on right */}
+              <div className="flex items-center justify-between mt-3 sm:mt-4">
+                <span className="text-white/85 text-[11px] sm:text-[12px] font-normal leading-tight">
+                  {stat.label}
+                </span>
+                <stat.icon
+                  size={16}
+                  className="text-white shrink-0 stroke-[1.8]"
+                  aria-hidden="true"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

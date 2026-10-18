@@ -1,16 +1,16 @@
 :root {
-  --bg-main: #F5F2EB;
-  --bg-card: #ECE7DC;
-  --bg-card-subtle: #E6E0D4;
-  --bg-dark: #0c0c0c;
-  --text-main: #1A221E;
-  --text-muted: #515B54;
-  --text-faint: #7A857E;
-  --accent-forest: #1E3A2B;
-  --accent-forest-hover: #15291E;
-  --accent-teak: #8A5229;
-  --border-subtle: rgba(26, 34, 30, 0.12);
-  --border-medium: rgba(26, 34, 30, 0.22);
+  --bg-main: #FFFFFF;
+  --bg-card: #F4F8F5;
+  --bg-card-subtle: #EBF3ED;
+  --bg-dark: #0D1F16;
+  --text-main: #132E20;
+  --text-muted: #4B6354;
+  --text-faint: #6B8274;
+  --accent-forest: #1A432E;
+  --accent-forest-hover: #122F20;
+  --accent-teak: #1A432E;
+  --border-subtle: rgba(26, 67, 46, 0.12);
+  --border-medium: rgba(26, 67, 46, 0.22);
   --font-serif: 'Newsreader', Georgia, serif;
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 
@@ -45,83 +45,83 @@
 
 /* Flatpickr Highland Palette Styling */
 .flatpickr-calendar {
-  background: #F5F2EB !important;
-  border: 1px solid rgba(26, 34, 30, 0.16) !important;
-  box-shadow: 0 12px 32px rgba(26, 34, 30, 0.12) !important;
-  color: #1A221E !important;
+  background: #FFFFFF !important;
+  border: 1px solid rgba(26, 67, 46, 0.16) !important;
+  box-shadow: 0 12px 32px rgba(26, 67, 46, 0.12) !important;
+  color: #132E20 !important;
 }
 
 .flatpickr-calendar.arrowTop::before,
 .flatpickr-calendar.arrowTop::after {
-  border-bottom-color: #F5F2EB !important;
+  border-bottom-color: #FFFFFF !important;
 }
 
 .flatpickr-calendar.arrowBottom::before,
 .flatpickr-calendar.arrowBottom::after {
-  border-top-color: #F5F2EB !important;
+  border-top-color: #FFFFFF !important;
 }
 
 .flatpickr-months {
-  background: #ECE7DC !important;
-  color: #1A221E !important;
-  border-bottom: 1px solid rgba(26, 34, 30, 0.10) !important;
+  background: #F4F8F5 !important;
+  color: #132E20 !important;
+  border-bottom: 1px solid rgba(26, 67, 46, 0.10) !important;
 }
 
 .flatpickr-months .flatpickr-month {
-  color: #1A221E !important;
-  fill: #1A221E !important;
+  color: #132E20 !important;
+  fill: #132E20 !important;
 }
 
 .flatpickr-current-month {
-  color: #1A221E !important;
+  color: #132E20 !important;
 }
 
 .flatpickr-current-month .flatpickr-monthDropdown-months {
-  background: #ECE7DC !important;
-  color: #1A221E !important;
+  background: #F4F8F5 !important;
+  color: #132E20 !important;
 }
 
 .flatpickr-current-month .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month {
-  background-color: #ECE7DC !important;
+  background-color: #F4F8F5 !important;
 }
 
 .flatpickr-current-month input.cur-year {
-  color: #1A221E !important;
+  color: #132E20 !important;
 }
 
 .flatpickr-months .flatpickr-prev-month,
 .flatpickr-months .flatpickr-next-month {
-  color: #515B54 !important;
-  fill: #515B54 !important;
+  color: #4B6354 !important;
+  fill: #4B6354 !important;
 }
 
 .flatpickr-months .flatpickr-prev-month:hover,
 .flatpickr-months .flatpickr-next-month:hover {
-  color: #1E3A2B !important;
-  fill: #1E3A2B !important;
+  color: #1A432E !important;
+  fill: #1A432E !important;
 }
 
 span.flatpickr-weekday {
-  background: #ECE7DC !important;
-  color: #515B54 !important;
+  background: #F4F8F5 !important;
+  color: #4B6354 !important;
   font-weight: 600 !important;
 }
 
 .flatpickr-day {
-  color: #1A221E !important;
+  color: #132E20 !important;
   border-radius: 6px !important;
 }
 
 .flatpickr-day:hover,
 .flatpickr-day:focus {
-  background: #ECE7DC !important;
-  border-color: #ECE7DC !important;
-  color: #1A221E !important;
+  background: #EBF3ED !important;
+  border-color: #EBF3ED !important;
+  color: #132E20 !important;
 }
 
 .flatpickr-day.today {
-  border-color: #1E3A2B !important;
-  color: #1A221E !important;
+  border-color: #1A432E !important;
+  color: #132E20 !important;
 }
 
 .flatpickr-day.selected,
@@ -136,22 +136,22 @@ span.flatpickr-weekday {
 .flatpickr-day.selected:hover,
 .flatpickr-day.startRange:hover,
 .flatpickr-day.endRange:hover {
-  background: #1E3A2B !important;
-  border-color: #1E3A2B !important;
-  color: #F5F2EB !important;
+  background: #1A432E !important;
+  border-color: #1A432E !important;
+  color: #FFFFFF !important;
   font-weight: 700 !important;
 }
 
 .flatpickr-day.inRange {
-  background: rgba(30, 58, 43, 0.15) !important;
+  background: rgba(26, 67, 46, 0.15) !important;
   border-color: transparent !important;
-  color: #1A221E !important;
-  box-shadow: -5px 0 0 rgba(30, 58, 43, 0.15), 5px 0 0 rgba(30, 58, 43, 0.15) !important;
+  color: #132E20 !important;
+  box-shadow: -5px 0 0 rgba(26, 67, 46, 0.15), 5px 0 0 rgba(26, 67, 46, 0.15) !important;
 }
 
 .flatpickr-day.flatpickr-disabled,
 .flatpickr-day.flatpickr-disabled:hover {
-  color: rgba(26, 34, 30, 0.25) !important;
+  color: rgba(19, 46, 32, 0.25) !important;
   background: transparent !important;
   border-color: transparent !important;
   cursor: not-allowed !important;
@@ -159,7 +159,7 @@ span.flatpickr-weekday {
 
 .flatpickr-day.prevMonthDay,
 .flatpickr-day.nextMonthDay {
-  color: rgba(26, 34, 30, 0.35) !important;
+  color: rgba(19, 46, 32, 0.35) !important;
 }
 
 /* 1. Top Banner (Hero) Animations */
@@ -298,30 +298,21 @@ span.flatpickr-weekday {
 /* 2. Whole Website Scroll Reveal */
 .reveal {
   opacity: 0;
-  transform: translateY(24px);
-  transition: opacity var(--dur-reveal) var(--ease-calm),
-              transform var(--dur-reveal) var(--ease-calm);
-  will-change: opacity, transform;
+  will-change: opacity, transform, filter;
 }
 
 .reveal.is-revealed {
   opacity: 1;
-  transform: translateY(0);
 }
 
 /* Staggered lists and cards */
 .stagger-group .reveal-item {
   opacity: 0;
-  transform: translateY(24px);
-  transition: opacity var(--dur-reveal) var(--ease-calm),
-              transform var(--dur-reveal) var(--ease-calm);
-  transition-delay: calc(var(--stagger-i, 0) * var(--stagger-gap));
-  will-change: opacity, transform;
+  will-change: opacity, transform, filter;
 }
 
 .stagger-group.is-revealed .reveal-item {
   opacity: 1;
-  transform: translateY(0);
 }
 
 /* 3. Photos in Gallery Hover Zoom (Touch screens excluded) */
@@ -383,5 +374,153 @@ span.flatpickr-weekday {
 
   html {
     scroll-behavior: auto !important;
+  }
+
+  .hero-ken-burns,
+  .hero-fade-1,
+  .hero-fade-2,
+  .hero-fade-3,
+  .hero-fade-4,
+  .hero-fade-5 {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Hero Section Redesign Animations */
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroKenBurns {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.05);
+  }
+}
+
+.hero-ken-burns {
+  animation: heroKenBurns 22s ease-out infinite alternate;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.hero-fade-1 {
+  animation: heroFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+.hero-fade-2 {
+  animation: heroFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+.hero-fade-3 {
+  animation: heroFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+}
+.hero-fade-4 {
+  animation: heroFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+}
+.hero-fade-5 {
+  animation: heroFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+}
+
+/* ==========================================================================
+   Lenis Smooth Scrolling Styles
+   ========================================================================== */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   Card Gentle Hover Lift & Shadow
+   ========================================================================== */
+.card-hover-lift,
+#nearby .grid > div,
+#comfort .stagger-group > div,
+#notes .grid > div,
+#contact .stagger-group > div {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.card-hover-lift:hover,
+#nearby .grid > div:hover,
+#comfort .stagger-group > div:hover,
+#notes .grid > div:hover,
+#contact .stagger-group > div:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px -8px rgba(19, 46, 32, 0.12);
+}
+
+/* ==========================================================================
+   Button Smooth Hover Scale & Shadow Transition
+   ========================================================================== */
+.btn-hover-effect,
+a.btn-hover-effect,
+a[href^="#inquire"],
+a[href^="tel:"],
+a[href^="https://wa.me"],
+button[type="submit"],
+.btn-hover-target {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: transform;
+}
+
+.btn-hover-effect:hover,
+a.btn-hover-effect:hover,
+a[href^="#inquire"]:hover,
+a[href^="tel:"]:hover,
+a[href^="https://wa.me"]:hover,
+button[type="submit"]:hover,
+.btn-hover-target:hover {
+  transform: translateY(-1.5px) scale(1.02);
+  box-shadow: 0 8px 24px -4px rgba(26, 67, 46, 0.22);
+}
+
+.btn-hover-effect:active,
+a.btn-hover-effect:active,
+a[href^="#inquire"]:active,
+a[href^="tel:"]:active,
+a[href^="https://wa.me"]:active,
+button[type="submit"]:active,
+.btn-hover-target:active {
+  transform: translateY(0) scale(0.99);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-hover-lift:hover,
+  #nearby .grid > div:hover,
+  #comfort .stagger-group > div:hover,
+  #notes .grid > div:hover,
+  #contact .stagger-group > div:hover,
+  .btn-hover-effect:hover,
+  a.btn-hover-effect:hover,
+  a[href^="#inquire"]:hover,
+  a[href^="tel:"]:hover,
+  a[href^="https://wa.me"]:hover,
+  button[type="submit"]:hover,
+  .btn-hover-target:hover {
+    transform: none !important;
+    box-shadow: none !important;
   }
 }

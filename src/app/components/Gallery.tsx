@@ -177,18 +177,18 @@ export function Gallery() {
   };
 
   return (
-    <section className="py-16 md:py-20 bg-[#F5F2EB] text-[#1A221E] border-b border-[#1A221E]/10" id="gallery">
+    <section className="py-16 md:py-20 bg-white text-[#132E20] border-b border-[#1A432E]/10" id="gallery">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         
         {/* Section Header */}
         <div className="max-w-2xl mb-8 md:mb-10">
-          <span className="text-xs uppercase tracking-widest text-[#8A5229] font-bold block mb-1.5">
+          <span className="text-xs uppercase tracking-widest text-[#1A432E] font-bold block mb-1.5">
             Inside the House &amp; Around
           </span>
           <h2 className="font-['Newsreader'] text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight">
             Real photos of our rooms, kitchen, and grounds.
           </h2>
-          <p className="font-['Plus_Jakarta_Sans'] text-sm md:text-base text-[#515B54] mt-2">
+          <p className="font-['Plus_Jakarta_Sans'] text-sm md:text-base text-[#4B6354] mt-2">
             All 16 authentic photographs of Nalaka Rest. Click any photo to see it full-screen.
           </p>
         </div>
@@ -201,7 +201,7 @@ export function Gallery() {
               <div
                 key={item.title}
                 onClick={() => openLightbox(idx)}
-                className={`gallery-card group relative cursor-pointer overflow-hidden rounded-xl bg-[#1A221E] border border-[#1A221E]/10 shadow-xs hover:border-[#1E3A2B] hover:shadow-lg transition-all duration-300 ${spanClass}`}
+                className={`gallery-card group relative cursor-pointer overflow-hidden rounded-xl bg-[#0D1F16] border border-[#1A432E]/15 shadow-xs hover:border-[#1A432E] hover:shadow-lg transition-all duration-300 ${spanClass}`}
               >
                 {/* Fixed aspect-ratio image with object-fit: cover */}
                 <img
@@ -220,7 +220,7 @@ export function Gallery() {
                     <h3 className="font-['Newsreader'] text-base sm:text-lg md:text-xl font-medium tracking-tight text-white drop-shadow-xs">
                       {item.title}
                     </h3>
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/20 backdrop-blur-md text-white text-[11px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1 shrink-0 border border-white/25 shadow-xs">
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[#1A432E]/80 backdrop-blur-md text-white text-[11px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1 shrink-0 border border-white/25 shadow-xs">
                       <Eye size={12} />
                       View
                     </span>
@@ -243,14 +243,14 @@ export function Gallery() {
           aria-modal="true"
           aria-label={`Photo view: ${photos[lightboxIndex].title}`}
           onClick={closeLightbox}
-          className="fixed inset-0 z-50 bg-[#1A221E]/95 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6"
+          className="fixed inset-0 z-50 bg-[#0D1F16]/95 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6"
         >
           {/* Top Bar */}
           <div 
             className="absolute top-4 left-4 right-4 flex items-center justify-between z-20 pointer-events-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <span className="text-xs text-[#F5F2EB]/80 font-medium bg-[#1A221E] px-3.5 py-1.5 rounded-full border border-white/10">
+            <span className="text-xs text-white/90 font-medium bg-[#1A432E] px-3.5 py-1.5 rounded-full border border-white/10">
               {photos[lightboxIndex].title} ({lightboxIndex + 1} of {photos.length})
             </span>
 
@@ -258,7 +258,7 @@ export function Gallery() {
               ref={closeButtonRef}
               type="button"
               onClick={closeLightbox}
-              className="w-10 h-10 rounded-full bg-[#1A221E] border border-white/20 text-[#F5F2EB] hover:bg-[#F5F2EB] hover:text-[#1A221E] flex items-center justify-center transition-colors cursor-pointer"
+              className="w-10 h-10 rounded-full bg-[#1A432E] border border-white/20 text-white hover:bg-white hover:text-[#1A432E] flex items-center justify-center transition-colors cursor-pointer"
               aria-label="Close photo view (Esc)"
             >
               <X size={20} />
@@ -272,7 +272,7 @@ export function Gallery() {
               e.stopPropagation();
               showPrev();
             }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-[#1A221E] border border-white/20 text-[#F5F2EB] hover:bg-[#F5F2EB] hover:text-[#1A221E] flex items-center justify-center transition-colors cursor-pointer"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-[#1A432E] border border-white/20 text-white hover:bg-white hover:text-[#1A432E] flex items-center justify-center transition-colors cursor-pointer"
             aria-label="Previous photo (Left arrow)"
           >
             <ChevronLeft size={24} />
@@ -285,7 +285,7 @@ export function Gallery() {
               e.stopPropagation();
               showNext();
             }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-[#1A221E] border border-white/20 text-[#F5F2EB] hover:bg-[#F5F2EB] hover:text-[#1A221E] flex items-center justify-center transition-colors cursor-pointer"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-[#1A432E] border border-white/20 text-white hover:bg-white hover:text-[#1A432E] flex items-center justify-center transition-colors cursor-pointer"
             aria-label="Next photo (Right arrow)"
           >
             <ChevronRight size={24} />
@@ -301,7 +301,7 @@ export function Gallery() {
               alt={photos[lightboxIndex].caption}
               className="max-h-[75vh] max-w-full object-contain rounded-xl shadow-2xl border border-white/10"
             />
-            <p className="text-center text-xs text-[#F5F2EB]/90 mt-3 font-['Newsreader'] italic max-w-lg">
+            <p className="text-center text-xs text-white/90 mt-3 font-['Newsreader'] italic max-w-lg">
               {photos[lightboxIndex].caption}
             </p>
           </div>
