@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { 
   MapPin, 
   Clock, 
@@ -10,7 +10,8 @@ import {
   ExternalLink, 
   Sparkles, 
   LayoutGrid, 
-  SlidersHorizontal 
+  SlidersHorizontal,
+  RefreshCw
 } from "lucide-react";
 
 import hortonPlains from "./Experienceplace/hortanplace.jpg";
@@ -155,105 +156,117 @@ const CATEGORIES = [
   { id: "culture", label: "Tea & Heritage" },
 ];
 
+const AUTO_EXCHANGE_INTERVAL = 3200; // 3.2 seconds between automatic box exchanges
+
 export function Experiences() {
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [isHovered, setIsHovered] = useState(false);
+  const [isCardHovered, setIsCardHovered] = useState(false);
   const [viewMode, setViewMode] = useState<"carousel" | "grid">("carousel");
+  const [itemsPerView, setItemsPerView] = useState(3);
   const [progress, setProgress] = useState(0);
 
-  const autoPlayIntervalRef = useRef<number | null>(null);
-  const progressIntervalRef = useRef<number | null>(null);
+  // Responsive items-per-view calculation
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setItemsPerView(1);
+      } else if (window.innerWidth < 1024) {
+        setItemsPerView(2);
+      } else {
+        setItemsPerView(3);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-  // Filter items based on selected category
+  // Filter items based on category
   const filteredPlaces = useMemo(() => {
     if (activeCategory === "all") return allHighlandPlaces;
     return allHighlandPlaces.filter((p) => p.category === activeCategory);
   }, [activeCategory]);
 
-  const maxIndex = Math.max(0, filteredPlaces.length - 1);
+  const totalItems = filteredPlaces.length;
+  const maxIndex = Math.max(0, totalItems - itemsPerView);
 
-  // Keep index in bounds when category changes
+  // Reset index when category or screen size changes
   useEffect(() => {
     setCurrentIndex(0);
     setProgress(0);
-  }, [activeCategory]);
+  }, [activeCategory, itemsPerView]);
 
-  // Automatic slide advancement timer
+  // Next slide function (loops smoothly back to 0)
+  const handleNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
+    setProgress(0);
+  }, [maxIndex]);
+
+  // Previous slide function
+  const handlePrev = useCallback(() => {
+    setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
+    setProgress(0);
+  }, [maxIndex]);
+
+  // AUTOMATIC BOX EXCHANGE TIMER (shifts boxes every 3.2 seconds)
   useEffect(() => {
-    if (!isAutoPlaying || isHovered || viewMode === "grid" || filteredPlaces.length <= 1) {
-      if (autoPlayIntervalRef.current) clearInterval(autoPlayIntervalRef.current);
-      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+    if (!isAutoPlaying || isCardHovered || viewMode === "grid" || totalItems <= itemsPerView) {
       setProgress(0);
       return;
     }
 
-    const DURATION = 4800; // 4.8 seconds per slide
-    const INTERVAL_TICK = 50;
+    const TICK_INTERVAL = 50;
     let elapsed = 0;
 
-    progressIntervalRef.current = window.setInterval(() => {
-      elapsed += INTERVAL_TICK;
-      setProgress(Math.min(100, (elapsed / DURATION) * 100));
-    }, INTERVAL_TICK);
+    const progressTimer = setInterval(() => {
+      elapsed += TICK_INTERVAL;
+      setProgress(Math.min(100, (elapsed / AUTO_EXCHANGE_INTERVAL) * 100));
+    }, TICK_INTERVAL);
 
-    autoPlayIntervalRef.current = window.setInterval(() => {
-      setCurrentIndex((prev) => (prev >= filteredPlaces.length - 1 ? 0 : prev + 1));
+    const exchangeTimer = setInterval(() => {
+      handleNext();
       elapsed = 0;
       setProgress(0);
-    }, DURATION);
+    }, AUTO_EXCHANGE_INTERVAL);
 
     return () => {
-      if (autoPlayIntervalRef.current) clearInterval(autoPlayIntervalRef.current);
-      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      clearInterval(progressTimer);
+      clearInterval(exchangeTimer);
     };
-  }, [isAutoPlaying, isHovered, viewMode, filteredPlaces.length, currentIndex]);
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
-    setProgress(0);
-  };
-
-  const handlePrev = () => {
-    setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
-    setProgress(0);
-  };
-
-  // Determine 3 visible items for desktop sliding carousel
-  const visiblePlaces = useMemo(() => {
-    if (filteredPlaces.length === 0) return [];
-    if (filteredPlaces.length <= 3) return filteredPlaces;
-
-    const items: HighlandPlace[] = [];
-    for (let i = 0; i < 3; i++) {
-      const idx = (currentIndex + i) % filteredPlaces.length;
-      items.push(filteredPlaces[idx]);
-    }
-    return items;
-  }, [filteredPlaces, currentIndex]);
+  }, [isAutoPlaying, isCardHovered, viewMode, totalItems, itemsPerView, handleNext]);
 
   return (
     <section 
       className="py-16 md:py-24 bg-[#F4F8F5] text-[#132E20] border-b border-[#1A432E]/10 relative overflow-hidden" 
       id="nearby"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <div className="max-w-6xl mx-auto px-6">
         
-        {/* Section Header with Live Auto-Showcase Status */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        {/* Section Header with Auto-Exchange Live Status */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
           <div className="max-w-2xl">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex flex-wrap items-center gap-2.5 mb-2.5">
               <span className="text-xs uppercase tracking-widest text-[#1A432E] font-bold">
                 Around Nalaka Rest · Highland Guide
               </span>
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-[#1A432E]/10 text-[#1A432E] px-2.5 py-0.5 rounded-full">
-                <Sparkles size={11} className="text-[#1A432E]" />
-                <span>9 Curated Highland Attractions</span>
-              </span>
+              
+              {/* Dynamic Auto-Exchange Indicator Badge */}
+              {viewMode === "carousel" && (
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-[#1A432E]/10 text-[#1A432E] px-3 py-0.5 rounded-full shadow-2xs">
+                  <span className={`w-2 h-2 rounded-full ${isAutoPlaying && !isCardHovered ? "bg-emerald-600 animate-pulse" : "bg-[#8A5229]"}`} />
+                  <span>
+                    {isCardHovered 
+                      ? "Paused on card hover" 
+                      : isAutoPlaying 
+                        ? `Auto-exchanging (${currentIndex + 1}/${totalItems})` 
+                        : "Auto-play paused"}
+                  </span>
+                </span>
+              )}
             </div>
+
             <h2 className="font-['Newsreader'] text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight">
               Iconic Highland Places Nearby.
             </h2>
@@ -262,7 +275,7 @@ export function Experiences() {
             </p>
           </div>
 
-          {/* Carousel Mode & Auto-Play Controls */}
+          {/* Controls: Mode Switcher, Play/Pause, Next/Prev Arrows */}
           <div className="flex flex-wrap items-center gap-3">
             {/* View Switcher: Auto Carousel vs Grid */}
             <div className="inline-flex items-center bg-white p-1 rounded-full border border-[#1A432E]/15 shadow-xs">
@@ -274,7 +287,7 @@ export function Experiences() {
                     ? "bg-[#1A432E] text-white shadow-xs"
                     : "text-[#4B6354] hover:text-[#132E20]"
                 }`}
-                title="Continuous auto-advancing showcase"
+                title="Continuous auto-sliding showcase"
               >
                 <SlidersHorizontal size={13} />
                 <span>Auto Showcase</span>
@@ -294,22 +307,20 @@ export function Experiences() {
               </button>
             </div>
 
-            {/* Play / Pause Toggle when in Carousel Mode */}
+            {/* Play / Pause Toggle Button */}
             {viewMode === "carousel" && (
               <button
                 type="button"
                 onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-                className={`w-9 h-9 rounded-full bg-white border border-[#1A432E]/15 flex items-center justify-center text-[#1A432E] hover:bg-[#EBF3ED] transition-colors shadow-xs ${
-                  isHovered && isAutoPlaying ? "ring-2 ring-[#1A432E]/20" : ""
-                }`}
-                title={isAutoPlaying ? "Pause auto-advancing" : "Resume auto-advancing"}
+                className="w-9 h-9 rounded-full bg-white border border-[#1A432E]/15 flex items-center justify-center text-[#1A432E] hover:bg-[#EBF3ED] transition-colors shadow-xs"
+                title={isAutoPlaying ? "Pause automatic exchange" : "Resume automatic exchange"}
                 aria-label={isAutoPlaying ? "Pause carousel" : "Play carousel"}
               >
-                {isAutoPlaying && !isHovered ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
+                {isAutoPlaying ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
               </button>
             )}
 
-            {/* Navigation Arrows for Carousel */}
+            {/* Next / Previous Arrow Buttons */}
             {viewMode === "carousel" && (
               <div className="flex items-center gap-1.5">
                 <button
@@ -317,6 +328,7 @@ export function Experiences() {
                   onClick={handlePrev}
                   className="w-9 h-9 rounded-full bg-white border border-[#1A432E]/15 flex items-center justify-center text-[#132E20] hover:bg-[#1A432E] hover:text-white transition-all shadow-xs active:scale-95"
                   aria-label="Previous attraction"
+                  title="Exchange backward"
                 >
                   <ChevronLeft size={16} />
                 </button>
@@ -325,6 +337,7 @@ export function Experiences() {
                   onClick={handleNext}
                   className="w-9 h-9 rounded-full bg-white border border-[#1A432E]/15 flex items-center justify-center text-[#132E20] hover:bg-[#1A432E] hover:text-white transition-all shadow-xs active:scale-95"
                   aria-label="Next attraction"
+                  title="Exchange forward"
                 >
                   <ChevronRight size={16} />
                 </button>
@@ -333,7 +346,7 @@ export function Experiences() {
           </div>
         </div>
 
-        {/* Filter Categories Bar */}
+        {/* Filter Categories Bar with Live Exchange Countdown Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
           <div className="flex flex-wrap items-center gap-1.5">
             {CATEGORIES.map((cat) => (
@@ -352,16 +365,16 @@ export function Experiences() {
             ))}
           </div>
 
-          {/* Auto-Slide Progress Bar Indicator */}
+          {/* Auto-Exchange Progress Indicator Bar */}
           {viewMode === "carousel" && isAutoPlaying && (
-            <div className="hidden sm:flex items-center gap-2.5 text-xs text-[#4B6354]">
-              <span className="text-[11px] font-medium">
-                {isHovered ? "Paused on hover" : `Auto-advancing (${currentIndex + 1} of ${filteredPlaces.length})`}
+            <div className="flex items-center gap-2.5 text-xs text-[#4B6354]">
+              <span className="text-[11px] font-medium hidden sm:inline">
+                Next exchange in:
               </span>
-              <div className="w-24 h-1.5 bg-[#1A432E]/15 rounded-full overflow-hidden">
+              <div className="w-20 sm:w-28 h-1.5 bg-[#1A432E]/15 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-[#1A432E] transition-all ease-linear"
-                  style={{ width: `${isHovered ? 100 : progress}%` }}
+                  style={{ width: `${isCardHovered ? 100 : progress}%` }}
                 />
               </div>
             </div>
@@ -369,88 +382,113 @@ export function Experiences() {
         </div>
 
         {/* ======================================================== */}
-        {/* CAROUSEL VIEW: 3-Card Smooth Auto-Showcase               */}
+        {/* CAROUSEL VIEW: Continuous Auto-Exchanging Sliding Track  */}
         {/* ======================================================== */}
         {viewMode === "carousel" ? (
-          <div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 lg:gap-8 items-stretch transition-all duration-500">
-              {visiblePlaces.map((place, idx) => (
-                <div
-                  key={`${place.id}-${idx}`}
-                  className="bg-white rounded-2xl overflow-hidden border border-[#1A432E]/12 flex flex-col justify-between shadow-sm hover:border-[#1A432E]/35 hover:shadow-lg transition-all duration-300 group animate-in fade-in zoom-in-95"
-                >
-                  <div>
-                    {/* Photo with Overlay Drive-Time & Distance */}
-                    <div className="relative aspect-[16/10] sm:aspect-[4/3] w-full overflow-hidden bg-[#EBF3ED]">
-                      <img
-                        src={place.image}
-                        alt={place.title}
-                        className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out block"
-                      />
-                      
-                      {/* Dark Gradient Overlay for Contrast */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 opacity-60 group-hover:opacity-40 transition-opacity" />
+          <div className="relative">
+            {/* Overflow viewport container */}
+            <div className="overflow-hidden rounded-2xl -mx-3 px-3 py-2">
+              {/* Sliding Track: Translates horizontally with smooth physics */}
+              <div 
+                className="flex transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                style={{
+                  transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
+                }}
+              >
+                {filteredPlaces.map((place, idx) => {
+                  const isVisibleInWindow = idx >= currentIndex && idx < currentIndex + itemsPerView;
 
-                      {/* Drive Time Pill Badge */}
-                      <div className="absolute top-3 right-3 bg-[#0D1F16]/85 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
-                        <Clock size={13} className="text-[#A7F3D0]" />
-                        <span>{place.time}</span>
-                      </div>
+                  return (
+                    <div
+                      key={place.id}
+                      className="px-3 shrink-0 flex flex-col transition-opacity duration-500"
+                      style={{ width: `${100 / itemsPerView}%` }}
+                      onMouseEnter={() => setIsCardHovered(true)}
+                      onMouseLeave={() => setIsCardHovered(false)}
+                    >
+                      <div 
+                        className={`bg-white rounded-2xl overflow-hidden border flex flex-col justify-between h-full shadow-sm hover:shadow-xl transition-all duration-300 group ${
+                          isVisibleInWindow 
+                            ? "border-[#1A432E]/15 hover:border-[#1A432E]/40" 
+                            : "border-[#1A432E]/10 opacity-75"
+                        }`}
+                      >
+                        <div>
+                          {/* Photo with Overlay Drive-Time & Distance */}
+                          <div className="relative aspect-[16/10] sm:aspect-[4/3] w-full overflow-hidden bg-[#EBF3ED]">
+                            <img
+                              src={place.image}
+                              alt={place.title}
+                              className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out block"
+                              loading="lazy"
+                            />
+                            
+                            {/* Subtle scrim for badge contrast */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 opacity-60 group-hover:opacity-40 transition-opacity" />
 
-                      {/* Distance Pill Badge */}
-                      <div className="absolute bottom-3 left-3 bg-[#0D1F16]/75 backdrop-blur-md text-white/90 text-[11px] font-medium px-2.5 py-1 rounded-md flex items-center gap-1">
-                        <MapPin size={11} className="text-[#A7F3D0]" />
-                        <span>{place.distance}</span>
+                            {/* Drive Time Pill Badge */}
+                            <div className="absolute top-3 right-3 bg-[#0D1F16]/85 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
+                              <Clock size={13} className="text-[#A7F3D0]" />
+                              <span>{place.time}</span>
+                            </div>
+
+                            {/* Distance Pill Badge */}
+                            <div className="absolute bottom-3 left-3 bg-[#0D1F16]/75 backdrop-blur-md text-white/90 text-[11px] font-medium px-2.5 py-1 rounded-md flex items-center gap-1">
+                              <MapPin size={11} className="text-[#A7F3D0]" />
+                              <span>{place.distance}</span>
+                            </div>
+                          </div>
+
+                          {/* Card Content */}
+                          <div className="p-6">
+                            <span className="text-[11px] uppercase tracking-wider text-[#1A432E] font-bold block mb-1.5">
+                              {place.tag}
+                            </span>
+                            <h3 className="font-['Newsreader'] text-2xl font-medium text-[#132E20] mb-2 leading-snug group-hover:text-[#1A432E] transition-colors">
+                              {place.title}
+                            </h3>
+                            <p className="font-['Plus_Jakarta_Sans'] text-xs sm:text-sm text-[#4B6354] leading-relaxed line-clamp-3">
+                              {place.desc}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Helpful Tip Footer & External Guide Link */}
+                        <div className="px-6 pb-6 pt-0">
+                          <div className="pt-3.5 border-t border-[#1A432E]/10 flex flex-col gap-2.5">
+                            <div className="flex items-start gap-2">
+                              <Compass size={14} className="text-[#1A432E] shrink-0 mt-0.5" />
+                              <p className="text-xs text-[#4B6354] font-['Newsreader'] italic leading-relaxed">
+                                Tip: {place.tip}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-1">
+                              <a
+                                href={place.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-[11px] font-bold text-[#1A432E] hover:underline"
+                              >
+                                <span>Explore Guide</span>
+                                <ExternalLink size={11} />
+                              </a>
+                              <span className="text-[10px] text-[#4B6354]/60 font-semibold tracking-wider uppercase">
+                                Place 0{idx + 1}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Card Content */}
-                    <div className="p-6">
-                      <span className="text-[11px] uppercase tracking-wider text-[#1A432E] font-bold block mb-1.5">
-                        {place.tag}
-                      </span>
-                      <h3 className="font-['Newsreader'] text-2xl font-medium text-[#132E20] mb-2 leading-snug group-hover:text-[#1A432E] transition-colors">
-                        {place.title}
-                      </h3>
-                      <p className="font-['Plus_Jakarta_Sans'] text-xs sm:text-sm text-[#4B6354] leading-relaxed line-clamp-3">
-                        {place.desc}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Helpful Tip Footer & External Guide Link */}
-                  <div className="px-6 pb-6 pt-0">
-                    <div className="pt-3.5 border-t border-[#1A432E]/10 flex flex-col gap-2.5">
-                      <div className="flex items-start gap-2">
-                        <Compass size={14} className="text-[#1A432E] shrink-0 mt-0.5" />
-                        <p className="text-xs text-[#4B6354] font-['Newsreader'] italic leading-relaxed">
-                          Tip: {place.tip}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-1">
-                        <a
-                          href={place.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] font-bold text-[#1A432E] hover:underline"
-                        >
-                          <span>Explore Guide</span>
-                          <ExternalLink size={11} />
-                        </a>
-                        <span className="text-[10px] text-[#4B6354]/60 font-semibold tracking-wider uppercase">
-                          Nuwara Eliya
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Pagination Dots */}
+            {/* Pagination Step Dots Indicator */}
             <div className="flex items-center justify-center gap-2 mt-8">
-              {filteredPlaces.map((_, dotIdx) => (
+              {Array.from({ length: maxIndex + 1 }).map((_, dotIdx) => (
                 <button
                   key={dotIdx}
                   type="button"
@@ -460,10 +498,11 @@ export function Experiences() {
                   }}
                   className={`h-2 rounded-full transition-all duration-300 ${
                     currentIndex === dotIdx
-                      ? "w-7 bg-[#1A432E]"
+                      ? "w-8 bg-[#1A432E]"
                       : "w-2 bg-[#1A432E]/25 hover:bg-[#1A432E]/50"
                   }`}
-                  aria-label={`Jump to slide ${dotIdx + 1}`}
+                  aria-label={`Jump to box position ${dotIdx + 1}`}
+                  title={`Show box ${dotIdx + 1}`}
                 />
               ))}
             </div>
@@ -473,7 +512,7 @@ export function Experiences() {
           /* GRID VIEW: All 9 Places in Full Responsive Grid          */
           /* ======================================================== */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 lg:gap-8 items-stretch">
-            {filteredPlaces.map((place) => (
+            {filteredPlaces.map((place, idx) => (
               <div
                 key={place.id}
                 className="bg-white rounded-2xl overflow-hidden border border-[#1A432E]/12 flex flex-col justify-between shadow-sm hover:border-[#1A432E]/35 hover:shadow-lg transition-all duration-300 group animate-in fade-in"
@@ -485,8 +524,9 @@ export function Experiences() {
                       src={place.image}
                       alt={place.title}
                       className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out block"
+                      loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 opacity-60 group-hover:opacity-40 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 opacity-60 group-hover:opacity-40 transition-opacity" />
 
                     <div className="absolute top-3 right-3 bg-[#0D1F16]/85 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
                       <Clock size={13} className="text-[#A7F3D0]" />
@@ -534,7 +574,7 @@ export function Experiences() {
                         <ExternalLink size={11} />
                       </a>
                       <span className="text-[10px] text-[#4B6354]/60 font-semibold tracking-wider uppercase">
-                        Nuwara Eliya
+                        Place 0{idx + 1}
                       </span>
                     </div>
                   </div>
