@@ -4,11 +4,11 @@ import dining_table from "./Sources/dining table.jpg";
 
 export function About() {
   return (
-    <section className="py-18 md:py-24 bg-white text-[#132E20] border-b border-[#1A432E]/10" id="house">
+    <section className="pt-14 md:pt-18 pb-6 md:pb-8 bg-white text-[#132E20]" id="house">
       <div className="max-w-6xl mx-auto px-6">
         
         {/* Section Lead-in with Scroll Reveal */}
-        <div className="reveal max-w-2xl mb-12">
+        <div className="reveal max-w-2xl mb-8 md:mb-10">
           <span className="text-xs uppercase tracking-widest text-[#1A432E] font-bold block mb-2">
             The Property &amp; Setting
           </span>
@@ -18,7 +18,7 @@ export function About() {
         </div>
 
         {/* Asymmetric Content Block: Wide Photo + Text Column */}
-        <div className="reveal grid grid-cols-1 lg:grid-cols-12 gap-10 items-start mb-14">
+        <div className="reveal grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start mb-8 md:mb-10">
           
           {/* Main Panorama Image (7 cols) */}
           <div className="lg:col-span-7 space-y-3">

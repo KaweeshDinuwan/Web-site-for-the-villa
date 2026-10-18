@@ -177,11 +177,11 @@ export function Gallery() {
   };
 
   return (
-    <section className="py-16 md:py-20 bg-white text-[#132E20] border-b border-[#1A432E]/10" id="gallery">
+    <section className="pt-2 md:pt-4 pb-14 md:pb-20 bg-white text-[#132E20] border-b border-[#1A432E]/10" id="gallery">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         
         {/* Section Header */}
-        <div className="max-w-2xl mb-8 md:mb-10">
+        <div className="max-w-2xl mb-6 md:mb-8 pt-6 border-t border-[#1A432E]/10">
           <span className="text-xs uppercase tracking-widest text-[#1A432E] font-bold block mb-1.5">
             Inside the House &amp; Around
           </span>
