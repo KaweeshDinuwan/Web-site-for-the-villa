@@ -2,7 +2,7 @@
 
 > A private 3-bedroom hillside house in the cool mountain highlands of Nuwara Eliya, Sri Lanka (1,860m above sea level).
 
-🌐 **Live Website:** [https://nalaka-rest.vercel.app/](https://nalaka-rest.vercel.app/)
+🌐 **Live Website:** https://nalak-arest.vercel.app/
 
 ---
 
