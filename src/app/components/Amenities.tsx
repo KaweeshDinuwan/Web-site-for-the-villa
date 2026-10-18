@@ -52,18 +52,18 @@ export function Amenities() {
   ];
 
   return (
-    <section className="py-16 md:py-20 bg-[#ECE7DC] text-[#1A221E] border-b border-[#1A221E]/10" id="comfort">
+    <section className="py-16 md:py-20 bg-[#F4F8F5] text-[#132E20] border-b border-[#1A432E]/10" id="comfort">
       <div className="max-w-6xl mx-auto px-6">
 
         {/* Section Header (Two-column layout with underline, no small label) */}
-        <div className="reveal grid grid-cols-1 md:grid-cols-12 gap-6 items-end mb-12 pb-8 border-b border-[#1A221E]/15">
+        <div className="reveal grid grid-cols-1 md:grid-cols-12 gap-6 items-end mb-12 pb-8 border-b border-[#1A432E]/12">
           <div className="md:col-span-7">
             <h2 className="font-['Newsreader'] text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight">
               Practical essentials for living in the hills.
             </h2>
           </div>
-          <div className="md:col-span-5 md:pl-6 md:border-l border-[#1A221E]/15">
-            <p className="font-['Plus_Jakarta_Sans'] text-sm md:text-base text-[#515B54]">
+          <div className="md:col-span-5 md:pl-6 md:border-l border-[#1A432E]/12">
+            <p className="font-['Plus_Jakarta_Sans'] text-sm md:text-base text-[#4B6354]">
               Everything listed here is tested and maintained for self-catering comfort. No gimmicks.
             </p>
           </div>
@@ -75,21 +75,21 @@ export function Amenities() {
             <div
               key={group.category}
               style={{ "--stagger-i": idx } as React.CSSProperties}
-              className="reveal-item bg-[#F5F2EB] p-7 sm:p-8 rounded-2xl border border-[#1A221E]/10 flex flex-col justify-between shadow-xs hover:border-[#1A221E]/25 transition-colors"
+              className="reveal-item bg-white p-7 sm:p-8 rounded-2xl border border-[#1A432E]/10 flex flex-col justify-between shadow-xs hover:border-[#1A432E]/25 transition-colors"
             >
               <div>
-                <h3 className="font-['Newsreader'] text-2xl font-medium text-[#1A221E] mb-1">
+                <h3 className="font-['Newsreader'] text-2xl font-medium text-[#132E20] mb-1">
                   {group.category}
                 </h3>
-                <p className="text-xs text-[#8A5229] font-medium mb-5">
+                <p className="text-xs text-[#1A432E] font-medium mb-5">
                   {group.subtitle}
                 </p>
 
                 {/* Clean Typographic Bullet List */}
-                <ul className="space-y-2.5 text-xs sm:text-sm text-[#515B54]">
+                <ul className="space-y-2.5 text-xs sm:text-sm text-[#4B6354]">
                   {group.items.map((item) => (
                     <li key={item} className="flex items-start gap-2.5">
-                      <span className="text-[#1E3A2B] font-bold mt-0.5">•</span>
+                      <span className="text-[#1A432E] font-bold mt-0.5">•</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -97,8 +97,8 @@ export function Amenities() {
               </div>
 
               {/* Specific Host Practical Note */}
-              <div className="mt-6 pt-4 border-t border-[#1A221E]/10">
-                <p className="text-xs text-[#515B54] italic font-['Newsreader']">
+              <div className="mt-6 pt-4 border-t border-[#1A432E]/10">
+                <p className="text-xs text-[#4B6354] italic font-['Newsreader']">
                   Tip: {group.note}
                 </p>
               </div>

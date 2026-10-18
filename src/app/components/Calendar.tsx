@@ -409,31 +409,31 @@ Please let me know if these dates are available and what the rate would be. Than
   }, [showPopup]);
 
   return (
-    <section className="py-18 md:py-24 bg-[#F5F2EB] text-[#1A221E] border-b border-[#1A221E]/10" id="inquire">
+    <section className="py-18 md:py-24 bg-white text-[#132E20] border-b border-[#1A432E]/10" id="inquire">
       <div className="max-w-4xl mx-auto px-6">
         
         {/* Section Header */}
         <div className="reveal max-w-xl mb-12">
-          <span className="text-xs uppercase tracking-widest text-[#8A5229] font-bold block mb-2">
+          <span className="text-xs uppercase tracking-widest text-[#1A432E] font-bold block mb-2">
             Reservations &amp; Dates
           </span>
           <h2 className="font-['Newsreader'] text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight">
             Check availability with the host.
           </h2>
-          <p className="font-['Plus_Jakarta_Sans'] text-sm md:text-base text-[#515B54] mt-2 leading-relaxed">
+          <p className="font-['Plus_Jakarta_Sans'] text-sm md:text-base text-[#4B6354] mt-2 leading-relaxed">
             We don’t use instant online booking engines. Send your dates directly to us, and we will confirm availability and talk about check-in directly with you.
           </p>
         </div>
 
         {/* Clean Inquiry Form Card */}
-        <div className="reveal bg-[#ECE7DC] p-6 sm:p-10 rounded-2xl border border-[#1A221E]/12 shadow-xs">
+        <div className="reveal bg-[#F4F8F5] p-6 sm:p-10 rounded-2xl border border-[#1A432E]/12 shadow-xs">
           <form onSubmit={handleWhatsAppSubmit} noValidate className="space-y-6">
             
             {/* Row 1: Name and Phone */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label htmlFor={nameId} className="block text-xs uppercase tracking-wider text-[#515B54] font-semibold mb-1.5">
-                  Your Full Name <span className="text-[#8A5229]">*</span>
+                <label htmlFor={nameId} className="block text-xs uppercase tracking-wider text-[#4B6354] font-semibold mb-1.5">
+                  Your Full Name <span className="text-[#1A432E]">*</span>
                 </label>
                 <input
                   id={nameId}
@@ -445,10 +445,10 @@ Please let me know if these dates are available and what the rate would be. Than
                   onChange={(e) => setName(e.target.value)}
                   onBlur={() => setTouched((p) => ({ ...p, name: true }))}
                   placeholder="e.g. Ashen Silva"
-                  className={`w-full bg-[#F5F2EB] border rounded-lg px-3.5 py-2.5 text-sm text-[#1A221E] placeholder:text-[#515B54]/40 focus:outline-none transition-colors ${
+                  className={`w-full bg-white border rounded-lg px-3.5 py-2.5 text-sm text-[#132E20] placeholder:text-[#4B6354]/40 focus:outline-none transition-colors ${
                     (touched.name || attemptedSubmit) && !nameValidation.valid
                       ? "border-rose-600 focus:border-rose-600"
-                      : "border-[#1A221E]/15 focus:border-[#1E3A2B]"
+                      : "border-[#1A432E]/15 focus:border-[#1A432E]"
                   }`}
                 />
                 {(touched.name || attemptedSubmit) && !nameValidation.valid && (
@@ -460,8 +460,8 @@ Please let me know if these dates are available and what the rate would be. Than
               </div>
 
               <div>
-                <label htmlFor={phoneId} className="block text-xs uppercase tracking-wider text-[#515B54] font-semibold mb-1.5">
-                  Phone / WhatsApp <span className="text-[#8A5229]">*</span>
+                <label htmlFor={phoneId} className="block text-xs uppercase tracking-wider text-[#4B6354] font-semibold mb-1.5">
+                  Phone / WhatsApp <span className="text-[#1A432E]">*</span>
                 </label>
                 <input
                   id={phoneId}
@@ -472,10 +472,10 @@ Please let me know if these dates are available and what the rate would be. Than
                   onChange={(e) => setPhone(e.target.value)}
                   onBlur={() => setTouched((p) => ({ ...p, phone: true }))}
                   placeholder="e.g. +94 77 123 4567"
-                  className={`w-full bg-[#F5F2EB] border rounded-lg px-3.5 py-2.5 text-sm text-[#1A221E] placeholder:text-[#515B54]/40 focus:outline-none transition-colors ${
+                  className={`w-full bg-white border rounded-lg px-3.5 py-2.5 text-sm text-[#132E20] placeholder:text-[#4B6354]/40 focus:outline-none transition-colors ${
                     (touched.phone || attemptedSubmit) && !phoneValidation.valid
                       ? "border-rose-600 focus:border-rose-600"
-                      : "border-[#1A221E]/15 focus:border-[#1E3A2B]"
+                      : "border-[#1A432E]/15 focus:border-[#1A432E]"
                   }`}
                 />
                 {(touched.phone || attemptedSubmit) && !phoneValidation.valid && (
@@ -490,11 +490,11 @@ Please let me know if these dates are available and what the rate would be. Than
             {/* Row 2: Date Picker (Flatpickr Range Mode) */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor={datesId} className="block text-xs uppercase tracking-wider text-[#515B54] font-semibold">
-                  Dates of Stay <span className="text-[#8A5229]">*</span>
+                <label htmlFor={datesId} className="block text-xs uppercase tracking-wider text-[#4B6354] font-semibold">
+                  Dates of Stay <span className="text-[#1A432E]">*</span>
                 </label>
                 {nights > 0 && (
-                  <span className="text-xs font-semibold text-[#1E3A2B]">
+                  <span className="text-xs font-semibold text-[#1A432E]">
                     {nights} Night{nights !== 1 ? "s" : ""} ({formatDisplayDate(checkIn!)} &rarr; {formatDisplayDate(checkOut!)})
                   </span>
                 )}
@@ -507,13 +507,13 @@ Please let me know if these dates are available and what the rate would be. Than
                   type="text"
                   placeholder="Click to pick check-in & check-out dates"
                   readOnly
-                  className={`w-full bg-[#F5F2EB] border rounded-lg px-3.5 py-2.5 text-sm text-[#1A221E] cursor-pointer focus:outline-none transition-colors ${
+                  className={`w-full bg-white border rounded-lg px-3.5 py-2.5 text-sm text-[#132E20] cursor-pointer focus:outline-none transition-colors ${
                     (attemptedSubmit && !datesValid) || rangeError
                       ? "border-rose-600"
-                      : "border-[#1A221E]/15 focus:border-[#1E3A2B]"
+                      : "border-[#1A432E]/15 focus:border-[#1A432E]"
                   }`}
                 />
-                <CalendarIcon size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#515B54] pointer-events-none" />
+                <CalendarIcon size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4B6354] pointer-events-none" />
               </div>
 
               {/* Range error or missing dates warning */}
@@ -528,8 +528,8 @@ Please let me know if these dates are available and what the rate would be. Than
                   <span>{dateValidation.error || "Please choose your check-in and check-out dates."}</span>
                 </p>
               ) : (
-                <p className="text-[11px] text-[#515B54] mt-1.5 flex items-center gap-1">
-                  <Info size={12} className="shrink-0" />
+                <p className="text-[11px] text-[#4B6354] mt-1.5 flex items-center gap-1">
+                  <Info size={12} className="shrink-0 text-[#1A432E]" />
                   <span>Confirmed booked nights are greyed out. Minimum stay is {MIN_STAY_NIGHTS} night.</span>
                 </p>
               )}
@@ -538,15 +538,15 @@ Please let me know if these dates are available and what the rate would be. Than
             {/* Row 3: Guests and Notes */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label htmlFor={guestsId} className="block text-xs uppercase tracking-wider text-[#515B54] font-semibold mb-1.5">
-                  Number of Guests <span className="text-[#8A5229]">*</span>
+                <label htmlFor={guestsId} className="block text-xs uppercase tracking-wider text-[#4B6354] font-semibold mb-1.5">
+                  Number of Guests <span className="text-[#1A432E]">*</span>
                 </label>
                 <select
                   id={guestsId}
                   ref={guestsSelectRef}
                   value={guests}
                   onChange={(e) => setGuests(Number(e.target.value))}
-                  className="w-full bg-[#F5F2EB] border border-[#1A221E]/15 rounded-lg px-3.5 py-2.5 text-sm text-[#1A221E] focus:outline-none focus:border-[#1E3A2B]"
+                  className="w-full bg-white border border-[#1A432E]/15 rounded-lg px-3.5 py-2.5 text-sm text-[#132E20] focus:outline-none focus:border-[#1A432E]"
                 >
                   {[1, 2, 3, 4, 5, 6].map((num) => (
                     <option key={num} value={num}>
@@ -554,17 +554,17 @@ Please let me know if these dates are available and what the rate would be. Than
                     </option>
                   ))}
                 </select>
-                <span className="block text-[11px] text-[#515B54] mt-1">
+                <span className="block text-[11px] text-[#4B6354] mt-1">
                   Private whole-home rental for up to 6 people.
                 </span>
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-1.5">
-                  <label htmlFor={notesId} className="block text-xs uppercase tracking-wider text-[#515B54] font-semibold">
-                    Notes or Questions <span className="text-[#515B54]/60 font-normal">(Optional)</span>
+                  <label htmlFor={notesId} className="block text-xs uppercase tracking-wider text-[#4B6354] font-semibold">
+                    Notes or Questions <span className="text-[#4B6354]/60 font-normal">(Optional)</span>
                   </label>
-                  <span className="text-[10px] text-[#515B54]/60">{notes.length}/500</span>
+                  <span className="text-[10px] text-[#4B6354]/60">{notes.length}/500</span>
                 </div>
                 <input
                   id={notesId}
@@ -573,18 +573,18 @@ Please let me know if these dates are available and what the rate would be. Than
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Arrival time, extra blankets, cooking plans..."
-                  className="w-full bg-[#F5F2EB] border border-[#1A221E]/15 rounded-lg px-3.5 py-2.5 text-sm text-[#1A221E] placeholder:text-[#515B54]/40 focus:outline-none focus:border-[#1E3A2B]"
+                  className="w-full bg-white border border-[#1A432E]/15 rounded-lg px-3.5 py-2.5 text-sm text-[#132E20] placeholder:text-[#4B6354]/40 focus:outline-none focus:border-[#1A432E]"
                 />
               </div>
             </div>
 
-            {/* Action Bar (B5: WhatsApp and Email buttons) */}
-            <div className="pt-3 border-t border-[#1A221E]/10 space-y-3">
+            {/* Action Bar (WhatsApp and Email buttons) */}
+            <div className="pt-3 border-t border-[#1A432E]/10 space-y-3">
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   type="submit"
-                  className={`flex-1 inline-flex items-center justify-center gap-2.5 bg-[#1E3A2B] text-[#F5F2EB] py-3.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer shadow-xs ${
-                    !isFormValid ? "opacity-65 hover:opacity-85" : "hover:bg-[#15291E]"
+                  className={`flex-1 inline-flex items-center justify-center gap-2.5 bg-[#1A432E] text-white py-3.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer shadow-xs ${
+                    !isFormValid ? "opacity-65 hover:opacity-85" : "hover:bg-[#122F20]"
                   }`}
                 >
                   <MessageCircle size={17} />
@@ -594,8 +594,8 @@ Please let me know if these dates are available and what the rate would be. Than
                 <button
                   type="button"
                   onClick={handleEmailClick}
-                  className={`inline-flex items-center justify-center gap-2 border border-[#1A221E]/20 text-[#1A221E] px-5 py-3.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
-                    !isFormValid ? "opacity-65 hover:opacity-85 hover:bg-[#F5F2EB]" : "hover:bg-[#F5F2EB]"
+                  className={`inline-flex items-center justify-center gap-2 border border-[#1A432E]/20 text-[#132E20] px-5 py-3.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                    !isFormValid ? "opacity-65 hover:opacity-85 hover:bg-white" : "hover:bg-white"
                   }`}
                 >
                   <Mail size={15} />
@@ -603,8 +603,8 @@ Please let me know if these dates are available and what the rate would be. Than
                 </button>
               </div>
 
-              <p className="text-xs text-[#515B54] text-center sm:text-left leading-relaxed">
-                Clicking opens WhatsApp with your inquiry pre-filled to <strong className="text-[#1A221E]">{HOST_PHONE}</strong>. No automated payment is taken. We will confirm availability and talk about check-in directly with you.
+              <p className="text-xs text-[#4B6354] text-center sm:text-left leading-relaxed">
+                Clicking opens WhatsApp with your inquiry pre-filled to <strong className="text-[#132E20]">{HOST_PHONE}</strong>. No automated payment is taken. We will confirm availability and talk about check-in directly with you.
               </p>
             </div>
 
@@ -620,71 +620,71 @@ Please let me know if these dates are available and what the rate would be. Than
           aria-modal="true"
           aria-labelledby="inquiry-popup-title"
           onClick={() => setShowPopup(false)}
-          className="fixed inset-0 z-50 bg-[#1A221E]/80 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6"
+          className="fixed inset-0 z-50 bg-[#0D1F16]/80 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-[#F5F2EB] text-[#1A221E] w-full max-w-md rounded-2xl p-6 sm:p-8 shadow-2xl border border-[#1A221E]/12 relative"
+            className="bg-white text-[#132E20] w-full max-w-md rounded-2xl p-6 sm:p-8 shadow-2xl border border-[#1A432E]/12 relative"
           >
             {/* Top Close Button */}
             <button
               type="button"
               onClick={() => setShowPopup(false)}
-              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-[#ECE7DC] hover:bg-[#E4DECD] text-[#515B54] hover:text-[#1A221E] flex items-center justify-center transition-colors cursor-pointer"
+              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-[#F4F8F5] hover:bg-[#EBF3ED] text-[#4B6354] hover:text-[#132E20] flex items-center justify-center transition-colors cursor-pointer"
               aria-label="Close message"
             >
               <X size={18} />
             </button>
 
             {/* Success Icon */}
-            <div className="w-14 h-14 rounded-full bg-[#1E3A2B]/10 text-[#1E3A2B] flex items-center justify-center mx-auto mb-3.5">
+            <div className="w-14 h-14 rounded-full bg-[#1A432E]/10 text-[#1A432E] flex items-center justify-center mx-auto mb-3.5">
               <CheckCircle2 size={32} />
             </div>
 
             {/* Modal Heading */}
             <h3
               id="inquiry-popup-title"
-              className="font-['Newsreader'] text-2xl sm:text-3xl font-medium text-center text-[#1A221E]"
+              className="font-['Newsreader'] text-2xl sm:text-3xl font-medium text-center text-[#132E20]"
             >
               Inquiry Sent!
             </h3>
             
-            <p className="text-center text-xs text-[#515B54] mt-1 leading-relaxed">
-              Thank you, <strong className="text-[#1A221E]">{submittedData?.name}</strong>. Your reservation inquiry has been sent.
+            <p className="text-center text-xs text-[#4B6354] mt-1 leading-relaxed">
+              Thank you, <strong className="text-[#132E20]">{submittedData?.name}</strong>. Your reservation inquiry has been sent.
             </p>
 
             {/* 24-Hour Contact Notice Highlight Box */}
-            <div className="my-5 p-4 rounded-xl bg-[#ECE7DC] border border-[#1A221E]/10 text-center">
-              <div className="inline-flex items-center gap-1.5 text-[#8A5229] font-bold text-[11px] uppercase tracking-wider mb-1">
+            <div className="my-5 p-4 rounded-xl bg-[#F4F8F5] border border-[#1A432E]/10 text-center">
+              <div className="inline-flex items-center gap-1.5 text-[#1A432E] font-bold text-[11px] uppercase tracking-wider mb-1">
                 <Clock size={13} />
                 <span>Response Time</span>
               </div>
-              <p className="font-['Newsreader'] text-xl font-semibold text-[#1E3A2B]">
+              <p className="font-['Newsreader'] text-xl font-semibold text-[#1A432E]">
                 We will contact you within 24 hours
               </p>
-              <p className="text-xs text-[#515B54] mt-1.5 leading-relaxed">
+              <p className="text-xs text-[#4B6354] mt-1.5 leading-relaxed">
                 We will confirm availability and talk about check-in directly with you on WhatsApp or phone.
               </p>
             </div>
 
             {/* Summary Details */}
             {submittedData && (
-              <div className="text-xs space-y-1.5 bg-[#F5F2EB] p-3.5 rounded-xl border border-[#1A221E]/10 mb-5 text-[#515B54]">
+              <div className="text-xs space-y-1.5 bg-[#F4F8F5] p-3.5 rounded-xl border border-[#1A432E]/10 mb-5 text-[#4B6354]">
                 <div className="flex justify-between items-center">
                   <span>Dates:</span>
-                  <span className="font-semibold text-[#1A221E]">
+                  <span className="font-semibold text-[#132E20]">
                     {submittedData.checkInFormatted} &rarr; {submittedData.checkOutFormatted} ({submittedData.nights} night{submittedData.nights !== 1 ? "s" : ""})
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span>Guests:</span>
-                  <span className="font-semibold text-[#1A221E]">
+                  <span className="font-semibold text-[#132E20]">
                     {submittedData.guests} guest{submittedData.guests !== 1 ? "s" : ""} (Entire Villa)
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span>Your Phone:</span>
-                  <span className="font-semibold text-[#1A221E]">{submittedData.phone}</span>
+                  <span className="font-semibold text-[#132E20]">{submittedData.phone}</span>
                 </div>
               </div>
             )}
@@ -693,13 +693,13 @@ Please let me know if these dates are available and what the rate would be. Than
             <button
               type="button"
               onClick={() => setShowPopup(false)}
-              className="w-full bg-[#1E3A2B] text-[#F5F2EB] hover:bg-[#15291E] py-3.5 rounded-xl font-medium text-sm transition-colors cursor-pointer shadow-xs"
+              className="w-full bg-[#1A432E] text-white hover:bg-[#122F20] py-3.5 rounded-xl font-medium text-sm transition-colors cursor-pointer shadow-xs"
             >
               OK, Got It
             </button>
 
-            <p className="text-[11px] text-center text-[#515B54]/80 mt-3">
-              Need immediate assistance? Call us directly on <strong className="text-[#1A221E]">{HOST_PHONE}</strong>
+            <p className="text-[11px] text-center text-[#4B6354]/80 mt-3">
+              Need immediate assistance? Call us directly on <strong className="text-[#132E20]">{HOST_PHONE}</strong>
             </p>
           </div>
         </div>
